@@ -1,3 +1,4 @@
+from collections import deque
 import re
 import os
 
@@ -182,10 +183,37 @@ def query_membership():
     return membership_yn
 
 
+def query_options():
+    opt_ovp = dialog_yn("옵션", "공식 비디오를 다운로드 하시겠습니까?")
+    opt_post = dialog_yn("옵션", "포스트를 다운로드 하시겠습니까?")
+    opt_amount = None
+    while opt_amount is None:
+        opt_amount = input_dialog(
+            title="옵션",
+            text="다운로드 할 개수를 입력 해 주세요.\n게시물은 최신순으로 결정됩니다.\n\n(전체 다운로드 시 0 입력)",
+            ok_text="확인",
+            cancel_text="재설정",
+            style=ptk_flat_style,
+        ).run()
+        try:
+            opt_amount = int(opt_amount)
+        except ValueError:
+            dialog_error_message("유효하지 않은 값입니다.")
+            opt_amount = None
+            continue
+        except TypeError:
+            opt_amount = None
+            continue
+        else:
+            return opt_ovp, opt_post, opt_amount
+
+
 def main():
     target_channel, target_board = query_download_url()
 
     membership = query_membership()
+
+    opt_ovp, opt_post, opt_amount = query_options()
 
     return dialog_yn("다운로드 완료", "다운로드가 완료되었습니다.\n다른 게시판을 추가로 다운로드 하겠습니까?")
 
