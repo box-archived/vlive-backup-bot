@@ -188,14 +188,18 @@ def query_membership():
 
 
 def main():
-    query_license_agreement()
-
     target_channel, target_board = query_download_url()
 
     membership = query_membership()
 
-    return shutdown()
+    return dialog_yn("다운로드 완료", "다운로드가 완료되었습니다.\n다른 게시판을 추가로 다운로드 하겠습니까?")
 
 
 if __name__ == '__main__':
-    main()
+    query_license_agreement()
+
+    while True:
+        if main():
+            continue
+        else:
+            shutdown()
