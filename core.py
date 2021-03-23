@@ -49,6 +49,27 @@ def dialog_error_message(message):
     ).run()
 
 
+def query_license_agreement():
+    lic = ""
+    lic += '이 소프트웨어는 자유 소프트웨어로, GPL-3.0 License 를 따릅니다.\n'
+    lic += "라이센스의 전문은 깃헙 레포에서 확인할 수 있습니다.\n\n"
+    lic += "이 소프트웨어의 이용으로 인한 책임은 사용자에게 있으며,\n"
+    lic += "저장한 영상을 타인에게 공유할 시 저작권법 위반에 해당될 수 있습니다."
+
+    formatted_lic = "\n".join(map(lambda x: x.center(60), lic.split("\n")))
+
+    if not button_dialog(
+            title='라이선스',
+            text=formatted_lic,
+            buttons=[
+                ('동의', True),
+                ('거부', False),
+            ],
+            style=ptk_dialog_style
+    ).run():
+        shutdown()
+
+
 def query_download_url():
     url_rule = re.compile('((?<=vlive.tv\/channel\/).+(?=\/board\/))\/board\/(\d+)')
     target_url = ""
@@ -83,6 +104,8 @@ def query_download_url():
 
 
 def main():
+    query_license_agreement()
+
     target_channel, target_board = query_download_url()
 
     result = button_dialog(
