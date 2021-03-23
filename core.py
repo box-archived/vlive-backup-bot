@@ -33,7 +33,7 @@ def shutdown():
         title='VLIVE-BACKUP-BOT',
         text='모든 작업이 완료되었습니다\n엔터키를 누르면 프로그램을 종료합니다.',
         buttons=[
-            ('Exit', True),
+            ('종료', True),
         ],
         style=ptk_dialog_style
     ).run()
