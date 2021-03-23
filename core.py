@@ -1,4 +1,8 @@
 import re
+import os
+
+import vlivepy
+import vlivepy.exception
 from prompt_toolkit.shortcuts import (
     message_dialog,
     input_dialog,
@@ -41,10 +45,22 @@ def shutdown():
         exit()
 
 
-def dialog_error_message(message):
+def dialog_error_message(text):
     message_dialog(
         title="오류",
-        text=message,
+        text=text,
+        style=ptk_dialog_style
+    ).run()
+
+
+def dialog_yn(title, text):
+    return button_dialog(
+        title=title,
+        text=text,
+        buttons=[
+            ('예', True),
+            ('아니요', False),
+        ],
         style=ptk_dialog_style
     ).run()
 
@@ -103,20 +119,74 @@ def query_download_url():
             dialog_error_message("유효하지 않은 URL 입니다!")
 
 
+def query_membership():
+    membership_yn = dialog_yn(
+        title='멤버십 선택',
+        text='멤버십(팬십) 컨텐츠입니까?',
+    )
+
+    if membership_yn:
+        # Session exist check
+        if os.path.isfile("vlive-backup-bot.session"):
+            if dialog_yn("로그인", "로그인 내역이 존재합니다.\n 기존 세션을 이용하시겠습니까?"):
+                return True
+
+        # Login
+        while True:
+
+            user_email = ""
+            while len(user_email) == 0:
+                user_email = input_dialog(
+                    title="로그인",
+                    text="VLIVE 이메일 아이디를 입력하세요.",
+                    ok_text="확인",
+                    cancel_text="취소",
+                    style=ptk_flat_style,
+                ).run()
+                if user_email is None:
+                    if dialog_yn("로그인", "로그인을 취소하시겠습니까?"):
+                        return False
+                    else:
+                        user_email = ""
+                        continue
+
+            # password
+            user_pwd = ""
+            while len(user_pwd) == 0:
+                user_pwd = input_dialog(
+                    title="로그인",
+                    text="VLIVE 비밀번호를 입력하세요.",
+                    ok_text="확인",
+                    cancel_text="취소",
+                    style=ptk_flat_style,
+                    password=True
+                ).run()
+                if user_pwd is None:
+                    if dialog_yn("로그인", "로그인을 취소하시겠습니까?"):
+                        return False
+                    else:
+                        user_pwd = ""
+                        continue
+            print("로그인 시도중입니다...")
+            # try login
+            try:
+                sess = vlivepy.UserSession(user_email, user_pwd)
+            except vlivepy.exception.APISignInFailedError:
+                dialog_error_message("로그인에 실패했습니다.\n계정 정보를 확인 해 주세요.")
+            else:
+                with open("vlive-backup-bot.session", "wb") as f:
+                    vlivepy.dumpSession(sess, f)
+                return True
+
+    return membership_yn
+
+
 def main():
     query_license_agreement()
 
     target_channel, target_board = query_download_url()
 
-    result = button_dialog(
-        title='멤버십 선택',
-        text='멤버십(팬십) 컨텐츠입니까?',
-        buttons=[
-            ('예', True),
-            ('아니요', False),
-        ],
-        style=ptk_dialog_style
-    ).run()
+    membership = query_membership()
 
     return shutdown()
 
