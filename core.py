@@ -108,15 +108,10 @@ def query_download_url():
 
         regex_result = url_rule.findall(target_url)
         if len(regex_result) == 1:
-            if button_dialog(
+            if dialog_yn(
                 title='확인',
                 text='입력하신 정보가 맞습니까?\n\n채널: %s\n게시판: %s' % (regex_result[0][0], regex_result[0][1]),
-                buttons=[
-                    ('예', True),
-                    ('아니요', False),
-                ],
-                style=ptk_dialog_style
-            ).run():
+            ):
                 return regex_result[0]
         else:
             dialog_error_message("유효하지 않은 URL 입니다!")
