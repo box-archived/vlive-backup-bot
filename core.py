@@ -3,16 +3,19 @@ import os
 
 import vlivepy
 import vlivepy.exception
+from prompt_toolkit import PromptSession
 from prompt_toolkit.shortcuts import (
     message_dialog,
     input_dialog,
-    button_dialog
+    button_dialog,
+    clear,
 )
 from prompt_toolkit.styles import (
     Style,
 )
 import pyclip
 
+ptk_session = PromptSession()
 ptk_dialog_style = Style.from_dict({
     'dialog': 'bg:#000000',
     'button': '#1ecfff',
@@ -167,8 +170,9 @@ def query_membership():
                     else:
                         user_pwd = ""
                         continue
-            print("로그인 시도중입니다...")
+
             # try login
+            ptk_session.prompt("로그인 시도중입니다.")
             try:
                 sess = vlivepy.UserSession(user_email, user_pwd)
             except vlivepy.exception.APISignInFailedError:
@@ -177,6 +181,8 @@ def query_membership():
                 with open("vlive-backup-bot.session", "wb") as f:
                     vlivepy.dumpSession(sess, f)
                 return True
+            finally:
+                clear()
 
     return membership_yn
 
