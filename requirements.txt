@@ -1,2 +1,3 @@
 prompt-toolkit>=3.0.18
 vlivepy==1.0.2
+pyclip>=0.5.4

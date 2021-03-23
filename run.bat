@@ -27,4 +27,4 @@ ECHO.
 TIMEOUT /t 1 > nul
 cls
 
-.\venv\Scripts\python main.py
+.\venv\Scripts\python core.py
