@@ -1,8 +1,10 @@
+# -*- coding: utf-8 -*-
 from collections import deque
 import time
 import re
 import os
 
+from bs4 import BeautifulSoup, element
 import requests
 import vlivepy
 import vlivepy.board
@@ -68,20 +70,29 @@ def tool_calc_percent(full, now):
     return res
 
 
-def tool_download_file(url: str, location: str, filename: str = None):
-    # parse extension
+def tool_parse_url(url: str):
+    # pa`rse extension
     ext_split = url.split("?")[0].rsplit(".", 1)
 
     # parse server filename
+    filename = ext_split[0].rsplit("/", 1)[-1]
+
+    return ext_split[-1], filename
+
+
+def tool_download_file(url: str, location: str, filename: str = None):
+
+    ext, name = tool_parse_url(url)
+
     if filename is None:
-        filename = ext_split[0].rsplit("/", 1)[-1]
+        filename = name
 
     # create dir
     os.makedirs(location, exist_ok=True)
 
     with requests.get(url, stream=True) as r:
         r.raise_for_status()
-        with open(f"{location}/{filename}.{ext_split[-1]}", 'wb') as f:
+        with open(f"{location}/{filename}.{ext}", 'wb') as f:
             for chunk in r.iter_content(chunk_size=8192):
                 f.write(chunk)
 
@@ -442,8 +453,9 @@ def proc_downloader(download_queue, channel_id, board_id):
                 base_dir, format_epoch(current_target.created_at, "%Y-%m-%d"), current_target.post_id
             )
 
-            # type OfficialVideoPost
             if current_target.has_official_video:
+                # type OfficialVideoPost
+
                 ovp = current_target.to_object()
 
                 # continue when live
@@ -474,6 +486,69 @@ def proc_downloader(download_queue, channel_id, board_id):
                     else:
                         report_log("성공")
             else:
+                # type Post
+                post = current_target.to_object()
+
+                html = post.formatted_body()
+
+                soup = BeautifulSoup(html, 'html.parser')
+                imgs = soup.find_all("img")
+                img_cnt = 0
+
+                # download image
+                for item in imgs:
+                    img_cnt += 1
+
+                    item: element
+                    dnld_image_name = "%s-img-%02d" % (current_target.post_id, img_cnt)
+                    tool_download_file(
+                        url=item['src'],
+                        location=current_location,
+                        filename=dnld_image_name
+                    )
+                    item['src'] = f"{dnld_image_name}.{tool_parse_url(item['src'])[0]}"
+
+                # download video
+                videos = soup.find_all("video")
+                video_cnt = 0
+                for item in videos:
+                    item: element
+                    video_cnt += 1
+
+                    # Poster get
+                    dnld_poster_name = "%s-poster-%02d" % (current_target.post_id, video_cnt)
+                    tool_download_file(
+                        url=item['poster'],
+                        location=current_location,
+                        filename=dnld_poster_name
+                    )
+                    item['poster'] = f"{dnld_poster_name}.{tool_parse_url(item['poster'])[0]}"
+
+                    # Video get
+                    dnld_video_name = "%s-video-%02d" % (current_target.post_id, video_cnt)
+                    tool_download_file(
+                        url=item['src'],
+                        location=current_location,
+                        filename=dnld_video_name
+                    )
+                    item['src'] = f"{dnld_video_name}.{tool_parse_url(item['src'])[0]}"
+
+                # Get star-comment
+                comment_html = """\n<div style="padding-top:5px"><h3>스타 댓글</h3></div>"""
+
+                for comment_item in post.getPostStarCommentsIter():
+                    comment_html += '<div style="padding-top:5px;width:720px;border-top:1px solid #f2f2f2;border-bottom:1px solid #f2f2f2">'
+                    comment_html += '<div style="margin: 15px 0 0 15px">'
+                    comment_html += f'<span style="font-weight:700; font-size:13px; margin-right:10px">{comment_item.author_nickname}</span>'
+                    comment_html += f'<span style="font-size:12px; color:#777;">{vlivepy.parser.format_epoch(comment_item.created_at, "%Y-%m-%d %H:%M:%S")}</span>'
+                    comment_html += '</div>'
+                    comment_html += f'<div style="margin: 0 0 15px 15px; font-size:14px">{comment_item.body}</div>'
+                    comment_html += '</div>'
+
+                with open(f"{current_location}/post-{current_target.post_id}.html", encoding="utf8", mode="w") as f:
+                    f.write(str(soup))
+                    f.write(comment_html)
+
                 report_log("성공")
 
             # Write meta
