@@ -1,4 +1,5 @@
 from collections import deque
+import time
 import re
 import os
 
@@ -9,6 +10,7 @@ from prompt_toolkit.shortcuts import (
     message_dialog,
     input_dialog,
     button_dialog,
+    progress_dialog,
     clear,
 )
 from prompt_toolkit.styles import (
@@ -167,18 +169,38 @@ def query_membership():
                         user_pwd = ""
                         continue
 
+            login_callback_result = False
+
             # try login
-            ptk_session.prompt("로그인 시도중입니다.")
-            try:
-                sess = vlivepy.UserSession(user_email, user_pwd)
-            except vlivepy.exception.APISignInFailedError:
-                dialog_error_message("로그인에 실패했습니다.\n계정 정보를 확인 해 주세요.")
-            else:
-                with open("vlive-backup-bot.session", "wb") as f:
-                    vlivepy.dumpSession(sess, f)
+            def login_try(report_progress, report_log):
+                nonlocal login_callback_result
+                report_log("로그인 시도중입니다.\n")
+                report_progress(50)
+                try:
+                    sess = vlivepy.UserSession(user_email, user_pwd)
+                except vlivepy.exception.APISignInFailedError:
+                    # break
+                    report_log("로그인에 실패했습니다.\n")
+                    login_callback_result = False
+                    report_progress(100)
+                else:
+                    report_progress(75)
+                    # dump session
+                    report_log("세션파일을 생성합니다.\n")
+                    with open("vlive-backup-bot.session", "wb") as f:
+                        vlivepy.dumpSession(sess, f)
+
+                    # break
+                    report_log("로그인에 성공했습니다.\n")
+                    time.sleep(1)
+                    login_callback_result = True
+                    report_progress(100)
+
+            progress_dialog("로그인", None, login_try).run()
+            if login_callback_result:
                 return True
-            finally:
-                clear()
+            else:
+                dialog_error_message("로그인에 실패했습니다.\n계정 정보를 확인 해 주세요.")
 
     return membership_yn
 
@@ -209,6 +231,7 @@ def query_options():
 
 
 def main():
+    clear()
     target_channel, target_board = query_download_url()
 
     membership = query_membership()
