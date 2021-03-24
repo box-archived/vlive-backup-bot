@@ -95,6 +95,8 @@ def shutdown():
         ],
     ).run()
     if result:
+        clear()
+        print("VLIVE-BACKUP-BOT by @box_archived")
         exit()
 
 
@@ -437,10 +439,11 @@ def proc_downloader(download_queue, channel_id, board_id):
                         continue
                     else:
                         report_log("성공")
+                        time.sleep(1)
                         continue
             else:
-                time.sleep(0.2)
                 report_log("성공")
+                time.sleep(1)
                 continue
 
         # Download End
