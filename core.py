@@ -22,6 +22,26 @@ import pyclip
 
 ptk_session = PromptSession()
 
+
+def tool_remove_emoji(plain_text):
+    emoji_regex = re.compile(
+        "(["
+        "\U0001F1E0-\U0001F1FF"
+        "\U0001F300-\U0001F5FF"
+        "\U0001F600-\U0001F64F"
+        "\U0001F680-\U0001F6FF"
+        "\U0001F700-\U0001F77F"
+        "\U0001F780-\U0001F7FF"
+        "\U0001F800-\U0001F8FF"
+        "\U0001F900-\U0001F9FF"
+        "\U0001FA00-\U0001FA6F"
+        "\U0001FA70-\U0001FAFF"
+        "\U00002702-\U000027B0"
+        "])"
+    )
+    return emoji_regex.sub("_", plain_text)
+
+
 def shutdown():
     result = button_dialog(
         title='VLIVE-BACKUP-BOT',
@@ -88,7 +108,7 @@ def query_workflow_select():
 
 
 def query_download_url():
-    url_rule = re.compile('((?<=vlive.tv\/channel\/).+(?=\/board\/))\/board\/(\d+)')
+    url_rule = re.compile('((?<=vlive.tv/channel/).+(?=/board/))/board/(\d+)')
     target_url = ""
     while True:
         target_url = input_dialog(
@@ -270,7 +290,9 @@ def proc_load_post_list(target_channel, target_board, target_amount, membership)
 
 def query_post_select(post_list: deque, opt_ovp, opt_post):
     def item_parser(post_item: vlivepy.board.BoardPostItem):
-        description = "[%s] %s" % (format_epoch(post_item.created_at, "%Y-%m-%d"), post_item.title[:50])
+        description = "[%s] https://www.vlive.tv/post/%s" % (
+            format_epoch(post_item.created_at, "%Y-%m-%d"), post_item.post_id
+        )
         return post_item, description
 
     def calc_percent(full, now):
