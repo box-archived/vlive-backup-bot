@@ -86,6 +86,37 @@ def tool_download_file(url: str, location: str, filename: str = None):
                 f.write(chunk)
 
 
+def tool_write_meta(
+        location: str,
+        post_id: str,
+        title: str,
+        content_type: str,
+        author_nickname: str,
+        created_at: float,
+):
+
+    # create dir
+    os.makedirs(location, exist_ok=True)
+
+    # format
+    meta_text = (
+        f"""========VLIVE-BACKUP-BOT========
+TITLE: {title}
+CONTENT-TYPE: {content_type}
+AUTHOR: {author_nickname}
+TIME: {vlivepy.parser.format_epoch(created_at, "%Y-%m-%d %H:%M:%S")}
+BOT-SAVED: {vlivepy.parser.format_epoch(time.time(), "%Y-%m-%d %H:%M:%S")}
+ORIGIN: https://www.vlive.tv/post/{post_id}
+
+========VLIVE-BACKUP-BOT========
+
+""")
+
+    # write
+    with open(f"{location}/[{post_id}] info.txt", encoding="utf8", mode="w") as f:
+        f.write(meta_text)
+
+
 def shutdown():
     result = button_dialog(
         title='VLIVE-BACKUP-BOT',
@@ -95,7 +126,7 @@ def shutdown():
         ],
     ).run()
     if result:
-        clear()
+        # clear()
         print("VLIVE-BACKUP-BOT by @box_archived")
         exit()
 
@@ -144,12 +175,12 @@ def query_license_agreement():
 
 def query_workflow_select():
     return button_dialog(
-            title='모드 선택',
-            text="다운로드 모드를 선택하세요\n\n간편모드: 게시판 페이지의 모든 게시물을 저장합니다.\n고급모드: 다운로드 옵션을 지정합니다.",
-            buttons=[
-                ('간편모드', True),
-                ('고급모드', False),
-            ],
+        title='모드 선택',
+        text="다운로드 모드를 선택하세요\n\n간편모드: 게시판 페이지의 모든 게시물을 저장합니다.\n고급모드: 다운로드 옵션을 지정합니다.",
+        buttons=[
+            ('간편모드', True),
+            ('고급모드', False),
+        ],
     ).run()
 
 
@@ -172,8 +203,8 @@ def query_download_url():
         regex_result = url_rule.findall(target_url)
         if len(regex_result) == 1:
             if dialog_yn(
-                title='확인',
-                text='입력하신 정보가 맞습니까?\n\n채널: %s\n게시판: %s' % (regex_result[0][0], regex_result[0][1]),
+                    title='확인',
+                    text='입력하신 정보가 맞습니까?\n\n채널: %s\n게시판: %s' % (regex_result[0][0], regex_result[0][1]),
             ):
                 return regex_result[0]
         else:
@@ -407,6 +438,10 @@ def proc_downloader(download_queue, channel_id, board_id):
             )
             report_log(log_format % (initial_length - len(download_queue), initial_length))
 
+            current_location = "%s/[%s] %s" % (
+                base_dir, format_epoch(current_target.created_at, "%Y-%m-%d"), current_target.post_id
+            )
+
             # type OfficialVideoPost
             if current_target.has_official_video:
                 ovp = current_target.to_object()
@@ -430,21 +465,27 @@ def proc_downloader(download_queue, channel_id, board_id):
                     try:
                         tool_download_file(
                             url=max_source,
-                            location="%s/[%s] %s" % (base_dir, format_epoch(ovv.created_at, "%Y-%m-%d"), ovp.post_id),
+                            location=current_location,
                             filename=tool_regex_window_name(ovv.title)
                         )
-                        time.sleep(3)
                     except:
                         report_log("실패")
                         continue
                     else:
                         report_log("성공")
-                        time.sleep(1)
-                        continue
             else:
                 report_log("성공")
-                time.sleep(1)
-                continue
+
+            # Write meta
+            tool_write_meta(
+                location=current_location,
+                post_id=current_target.post_id,
+                title=current_target.title,
+                content_type=current_target.content_type,
+                author_nickname=current_target.author_nickname,
+                created_at=current_target.created_at,
+            )
+            time.sleep(0.3)
 
         # Download End
         report_progress(100)
