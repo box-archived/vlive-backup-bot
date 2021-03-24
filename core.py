@@ -3,8 +3,11 @@ import time
 import re
 import os
 
+import requests
 import vlivepy
 import vlivepy.board
+import vlivepy.parser
+import vlivepy.variables
 from vlivepy.parser import format_epoch
 from prompt_toolkit import PromptSession
 from prompt_toolkit.shortcuts import (
@@ -15,12 +18,15 @@ from prompt_toolkit.shortcuts import (
     checkboxlist_dialog,
     clear,
 )
-from prompt_toolkit.styles import (
-    Style,
-)
 import pyclip
 
 ptk_session = PromptSession()
+vlivepy.variables.override_gcc = "US"
+
+
+def tool_format_creator(max_int):
+    max_len = len(str(max_int))
+    return "%%%dd/%%%dd" % (max_len, max_len)
 
 
 def tool_remove_emoji(plain_text):
@@ -42,8 +48,42 @@ def tool_remove_emoji(plain_text):
     return emoji_regex.sub("_", plain_text)
 
 
+def tool_regex_window_name(plain_text):
+    # remove front space
+    regex_front_space = re.compile(r"^(\s+)")
+    regex_window_name = re.compile(r'[<>:"\\/|?*~]')
+
+    safe_name = regex_window_name.sub("_", regex_front_space.sub("", plain_text))
+
+    if len(safe_name) > 41:
+        safe_name = safe_name[:38] + ".._"
+
+    return safe_name
+
+
 def tool_calc_percent(full, now):
-    return (now / full * 100) - 1
+    res = now / full * 100
+    if res >= 100:
+        res -= 1
+    return res
+
+
+def tool_download_file(url: str, location: str, filename: str = None):
+    # parse extension
+    ext_split = url.split("?")[0].rsplit(".", 1)
+
+    # parse server filename
+    if filename is None:
+        filename = ext_split[0].rsplit("/", 1)[-1]
+
+    # create dir
+    os.makedirs(location, exist_ok=True)
+
+    with requests.get(url, stream=True) as r:
+        r.raise_for_status()
+        with open(f"{location}/{filename}.{ext_split[-1]}", 'wb') as f:
+            for chunk in r.iter_content(chunk_size=8192):
+                f.write(chunk)
 
 
 def shutdown():
@@ -344,6 +384,75 @@ def query_post_select(post_list: deque, opt_ovp, opt_post):
     return deque(check_result)
 
 
+def proc_downloader(download_queue, channel_id, board_id):
+    def callback_fn(report_progress, report_log):
+        # set base dir
+        base_dir = f"downloaded/{channel_id}_{board_id}"
+
+        # set count of queue
+        initial_length = len(download_queue)
+
+        # download proc
+        while download_queue:
+
+            # report
+            current_percent = tool_calc_percent(initial_length, initial_length - len(download_queue))
+            report_progress(current_percent)
+            current_target = download_queue.popleft()
+            current_target: vlivepy.board.BoardPostItem
+            log_format = "\n(%4.01f%%%%)(%s) [%s] 다운로드를 진행합니다......." % (
+                current_percent, tool_format_creator(initial_length), current_target.post_id
+            )
+            report_log(log_format % (initial_length - len(download_queue), initial_length))
+
+            # type OfficialVideoPost
+            if current_target.has_official_video:
+                ovp = current_target.to_object()
+
+                # continue when live
+                if ovp.official_video_type != "VOD":
+                    report_log("건너뜀 (VOD 아님)")
+                    continue
+
+                # Generate OfficialVideoVOD object
+                ovv = ovp.official_video()
+
+                # Find max res source
+                try:
+                    max_source = vlivepy.parser.max_res_from_play_info(ovv.getVodPlayInfo())['source']
+                except KeyError:
+                    report_log("실패")
+                    continue
+                else:
+                    # download
+                    try:
+                        tool_download_file(
+                            url=max_source,
+                            location="%s/[%s] %s" % (base_dir, format_epoch(ovv.created_at, "%Y-%m-%d"), ovp.post_id),
+                            filename=tool_regex_window_name(ovv.title)
+                        )
+                        time.sleep(3)
+                    except:
+                        report_log("실패")
+                        continue
+                    else:
+                        report_log("성공")
+                        continue
+            else:
+                time.sleep(0.2)
+                report_log("성공")
+                continue
+
+        # Download End
+        report_progress(100)
+
+    progress_dialog(
+        title="VLIVE 다운로드",
+        text="VLIVE 게시판 백업이 진행중입니다.\n이 작업은 시간이 걸립니다.",
+        run_callback=callback_fn
+    ).run()
+
+
 def main():
     clear()
     easy_mode = query_workflow_select()
@@ -376,6 +485,7 @@ def main():
         post_list = query_post_select(post_list, opt_ovp, opt_post)
 
     # Downloader Query
+    proc_downloader(post_list, target_channel, target_board)
 
     return dialog_download_end()
 
