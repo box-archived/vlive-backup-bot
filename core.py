@@ -21,24 +21,6 @@ from prompt_toolkit.styles import (
 import pyclip
 
 ptk_session = PromptSession()
-ptk_dialog_style = Style.from_dict({
-    'dialog': 'bg:#000000',
-    'button': '#1ecfff',
-    'dialog.body': 'bg:#000000 #1ecfff',
-    'dialog shadow': 'bg:#000000',
-    'frame.label': '#1ecfff',
-    'dialog.body label': '#ffffff',
-})
-
-ptk_flat_style = Style.from_dict({
-    'dialog': 'bg:#000000',
-    'button': '#1ecfff',
-    'dialog.body': 'bg:#000000 #000000',
-    'dialog shadow': 'bg:#000000',
-    'frame.label': '#1ecfff',
-    'dialog.body label': '#ffffff',
-})
-
 
 def shutdown():
     result = button_dialog(
@@ -47,7 +29,6 @@ def shutdown():
         buttons=[
             ('종료', True),
         ],
-        style=ptk_dialog_style
     ).run()
     if result:
         exit()
@@ -57,7 +38,6 @@ def dialog_error_message(text):
     message_dialog(
         title="오류",
         text=text,
-        style=ptk_dialog_style
     ).run()
 
 
@@ -69,7 +49,6 @@ def dialog_yn(title, text):
             ('예', True),
             ('아니요', False),
         ],
-        style=ptk_dialog_style
     ).run()
 
 
@@ -93,7 +72,6 @@ def query_license_agreement():
                 ('동의', True),
                 ('거부', False),
             ],
-            style=ptk_dialog_style
     ).run():
         shutdown()
 
@@ -106,7 +84,6 @@ def query_workflow_select():
                 ('간편모드', True),
                 ('고급모드', False),
             ],
-            style=ptk_dialog_style
     ).run()
 
 
@@ -119,7 +96,6 @@ def query_download_url():
             text="다운받을 게시판의 주소를 입력하세요.\n(예: https://www.vlive.tv/channel/B039DF/board/6118 )",
             ok_text="확인",
             cancel_text="붙여넣기",
-            style=ptk_flat_style,
         ).run()
         if target_url is None:
             try:
@@ -162,7 +138,6 @@ def query_membership():
                     text="VLIVE 이메일 아이디를 입력하세요.",
                     ok_text="확인",
                     cancel_text="취소",
-                    style=ptk_flat_style,
                 ).run()
                 if user_email is None:
                     if dialog_yn("로그인", "로그인을 취소하시겠습니까?"):
@@ -179,7 +154,6 @@ def query_membership():
                     text="VLIVE 비밀번호를 입력하세요.",
                     ok_text="확인",
                     cancel_text="취소",
-                    style=ptk_flat_style,
                     password=True
                 ).run()
                 if user_pwd is None:
@@ -235,7 +209,6 @@ def query_options():
             text="다운로드 할 개수를 입력 해 주세요.\n게시물은 최신순으로 결정됩니다.\n\n(전체 다운로드 시 0 입력)",
             ok_text="확인",
             cancel_text="재설정",
-            style=ptk_flat_style,
         ).run()
         try:
             opt_amount = int(opt_amount)
@@ -251,30 +224,53 @@ def query_options():
 
 
 def proc_load_post_list(target_channel, target_board, target_amount, membership):
-    kwargs = {}
-    # Add latest option when amount specified
-    if target_amount != 0:
-        kwargs.update({"latest": True})
-
-    # Add session when membership
-    if membership:
-        with open("vlive-backup-bot.session", "rb") as f:
-            kwargs.update({"session": vlivepy.loadSession(f)})
-
-    it = vlivepy.board.getBoardPostsIter(target_channel, target_board, **kwargs)
-
     post_list = deque()
-    for item in it:
-        post_list.append(item)
-        if len(post_list) == target_amount:
-            break
+
+    def callback_fn(report_progress, report_log):
+        report_progress(0)
+        nonlocal post_list
+        kwargs = {}
+        # Add latest option when amount specified
+        if target_amount != 0:
+            kwargs.update({"latest": True})
+
+        # Add session when membership
+        if membership:
+            with open("vlive-backup-bot.session", "rb") as f:
+                kwargs.update({"session": vlivepy.loadSession(f)})
+
+        it = vlivepy.board.getBoardPostsIter(target_channel, target_board, **kwargs)
+
+        cnt = 0
+        page = 1
+        for item in it:
+            if cnt == 0:
+                report_log("%03d 페이지를 로드합니다\n" % page)
+                page += 1
+
+            cnt += 1
+
+            post_list.append(item)
+
+            if cnt == 20:
+                cnt = 0
+            if len(post_list) == target_amount:
+                break
+
+        report_progress(100)
+
+    progress_dialog(
+        title="게시물 로드중...",
+        text="게시물 리스트롤 로드합니다.\n 이 작업에는 시간이 걸립니다.",
+        run_callback=callback_fn
+    ).run()
 
     return post_list
 
 
 def query_post_select(post_list: deque, opt_ovp, opt_post):
     def item_parser(post_item: vlivepy.board.BoardPostItem):
-        description = "[%s] %s" % (format_epoch(post_item.created_at, "%Y-%m-%d"), post_item.title)
+        description = "[%s] %s" % (format_epoch(post_item.created_at, "%Y-%m-%d"), post_item.title[:50])
         return post_item, description
 
     def calc_percent(full, now):
