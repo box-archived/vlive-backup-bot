@@ -5,12 +5,14 @@ import os
 
 import vlivepy
 import vlivepy.board
+from vlivepy.parser import format_epoch
 from prompt_toolkit import PromptSession
 from prompt_toolkit.shortcuts import (
     message_dialog,
     input_dialog,
     button_dialog,
     progress_dialog,
+    checkboxlist_dialog,
     clear,
 )
 from prompt_toolkit.styles import (
@@ -106,7 +108,6 @@ def query_workflow_select():
             ],
             style=ptk_dialog_style
     ).run()
-
 
 
 def query_download_url():
@@ -271,6 +272,59 @@ def proc_load_post_list(target_channel, target_board, target_amount, membership)
     return post_list
 
 
+def query_post_select(post_list: deque, opt_ovp, opt_post):
+    def item_parser(post_item: vlivepy.board.BoardPostItem):
+        description = "[%s] %s" % (format_epoch(post_item.created_at, "%Y-%m-%d"), post_item.title)
+        return post_item, description
+
+    def calc_percent(full, now):
+        return (now / full * 100) - 1
+
+    filtered_list = list()
+    check_dialog = None
+    check_result = None
+
+    def parser_progress(report_progress, report_log):
+        nonlocal filtered_list
+        nonlocal post_list
+        nonlocal check_dialog
+        initial_len = len(post_list)
+        cnt = 0
+
+        report_log("목록을 읽는 중입니다...\n")
+        while post_list:
+            item: vlivepy.board.BoardPostItem = post_list.popleft()
+            item_ovp = item.has_official_video
+            if item_ovp and opt_ovp:
+                filtered_list.append(item_parser(item))
+            elif not item_ovp and opt_post:
+                filtered_list.append(item_parser(item))
+
+            cnt += 1
+            report_progress(calc_percent(initial_len, cnt))
+            if len(filtered_list) == 0:
+                report_progress(100)
+
+        report_log("목록을 준비합니다.")
+        check_dialog = checkboxlist_dialog(
+            title="게시물 선택",
+            text="다운로드 할 게시물을 선택하세요.",
+            values=filtered_list,
+            ok_text="확인",
+            cancel_text="전체선택"
+        )
+        report_progress(100)
+
+    progress_dialog("게시물 선택", None, parser_progress).run()
+
+    if check_dialog is not None:
+        check_result = check_dialog.run()
+    if check_result is None:
+        check_result = map(lambda x: x[0], filtered_list)
+
+    return deque(check_result)
+
+
 def main():
     clear()
     easy_mode = query_workflow_select()
@@ -297,6 +351,13 @@ def main():
         target_amount=opt_amount,
         membership=membership,
     )
+
+    # Post select dialog on adv-mode
+    if not easy_mode:
+        post_list = query_post_select(post_list, opt_ovp, opt_post)
+
+    print(post_list)
+    time.sleep(10000)
 
     return dialog_download_end()
 
