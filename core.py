@@ -4,7 +4,7 @@ import re
 import os
 
 import vlivepy
-import vlivepy.exception
+import vlivepy.board
 from prompt_toolkit import PromptSession
 from prompt_toolkit.shortcuts import (
     message_dialog,
@@ -102,7 +102,7 @@ def query_download_url():
     while True:
         target_url = input_dialog(
             title="다운로드 URL 입력",
-            text="다운받을 게시판의 주소를 입력하세요.\n(예: https://www.vlive.tv/channel/B039DF/board/7192 )",
+            text="다운받을 게시판의 주소를 입력하세요.\n(예: https://www.vlive.tv/channel/B039DF/board/6118 )",
             ok_text="확인",
             cancel_text="붙여넣기",
             style=ptk_flat_style,
@@ -133,7 +133,9 @@ def query_membership():
     if membership_yn:
         # Session exist check
         if os.path.isfile("vlive-backup-bot.session"):
-            if dialog_yn("로그인", "로그인 내역이 존재합니다.\n 기존 세션을 이용하시겠습니까?"):
+            with open("vlive-backup-bot.session", "rb") as f:
+                loaded_email = vlivepy.loadSession(f).email
+            if dialog_yn("로그인", "로그인 내역이 존재합니다.\n 기존 세션을 이용하시겠습니까?\n\n 계정정보: %s" % loaded_email):
                 return True
 
         # Login
@@ -234,6 +236,28 @@ def query_options():
             return opt_ovp, opt_post, opt_amount
 
 
+def proc_load_post_list(target_channel, target_board, target_amount, membership):
+    kwargs = {}
+    # Add latest option when amount specified
+    if target_amount != 0:
+        kwargs.update({"latest": True})
+
+    # Add session when membership
+    if membership:
+        with open("vlive-backup-bot.session", "rb") as f:
+            kwargs.update({"session": vlivepy.loadSession(f)})
+
+    it = vlivepy.board.getBoardPostsIter(target_channel, target_board, **kwargs)
+
+    post_list = deque()
+    for item in it:
+        post_list.append(item)
+        if len(post_list) == target_amount:
+            break
+
+    return post_list
+
+
 def main():
     clear()
     target_channel, target_board = query_download_url()
@@ -244,6 +268,13 @@ def main():
 
     if not opt_ovp and not opt_post:
         return dialog_download_end()
+
+    post_list = proc_load_post_list(
+        target_channel=target_channel,
+        target_board=target_board,
+        target_amount=opt_amount,
+        membership=membership,
+    )
 
     return dialog_download_end()
 
