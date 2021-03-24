@@ -96,6 +96,19 @@ def query_license_agreement():
         shutdown()
 
 
+def query_workflow_select():
+    return button_dialog(
+            title='모드 선택',
+            text="다운로드 모드를 선택하세요\n\n간편모드: 게시판 페이지의 모든 게시물을 저장합니다.\n고급모드: 다운로드 옵션을 지정합니다.",
+            buttons=[
+                ('간편모드', True),
+                ('고급모드', False),
+            ],
+            style=ptk_dialog_style
+    ).run()
+
+
+
 def query_download_url():
     url_rule = re.compile('((?<=vlive.tv\/channel\/).+(?=\/board\/))\/board\/(\d+)')
     target_url = ""
@@ -260,14 +273,23 @@ def proc_load_post_list(target_channel, target_board, target_amount, membership)
 
 def main():
     clear()
+    easy_mode = query_workflow_select()
+
     target_channel, target_board = query_download_url()
 
     membership = query_membership()
 
-    opt_ovp, opt_post, opt_amount = query_options()
+    # Select option on adv-mode
+    if easy_mode:
+        opt_ovp = True
+        opt_post = True
+        opt_amount = 0
 
-    if not opt_ovp and not opt_post:
-        return dialog_download_end()
+    else:
+        opt_ovp, opt_post, opt_amount = query_options()
+
+        if not opt_ovp and not opt_post:
+            return dialog_download_end()
 
     post_list = proc_load_post_list(
         target_channel=target_channel,
