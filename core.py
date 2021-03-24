@@ -25,7 +25,7 @@ ptk_session = PromptSession()
 
 def tool_remove_emoji(plain_text):
     emoji_regex = re.compile(
-        "(["
+        r"(["
         "\U0001F1E0-\U0001F1FF"
         "\U0001F300-\U0001F5FF"
         "\U0001F600-\U0001F64F"
@@ -112,7 +112,7 @@ def query_workflow_select():
 
 
 def query_download_url():
-    url_rule = re.compile('((?<=vlive.tv/channel/).+(?=/board/))/board/(\d+)')
+    url_rule = re.compile(r'((?<=vlive.tv/channel/).+(?=/board/))/board/(\d+)')
     target_url = ""
     while True:
         target_url = input_dialog(
