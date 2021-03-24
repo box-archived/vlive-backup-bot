@@ -42,6 +42,10 @@ def tool_remove_emoji(plain_text):
     return emoji_regex.sub("_", plain_text)
 
 
+def tool_calc_percent(full, now):
+    return (now / full * 100) - 1
+
+
 def shutdown():
     result = button_dialog(
         title='VLIVE-BACKUP-BOT',
@@ -295,9 +299,6 @@ def query_post_select(post_list: deque, opt_ovp, opt_post):
         )
         return post_item, description
 
-    def calc_percent(full, now):
-        return (now / full * 100) - 1
-
     filtered_list = list()
     check_dialog = None
     check_result = None
@@ -319,7 +320,7 @@ def query_post_select(post_list: deque, opt_ovp, opt_post):
                 filtered_list.append(item_parser(item))
 
             cnt += 1
-            report_progress(calc_percent(initial_len, cnt))
+            report_progress(tool_calc_percent(initial_len, cnt))
             if len(filtered_list) == 0:
                 report_progress(100)
 
@@ -374,8 +375,7 @@ def main():
     if not easy_mode:
         post_list = query_post_select(post_list, opt_ovp, opt_post)
 
-    print(post_list)
-    time.sleep(10000)
+    # Downloader Query
 
     return dialog_download_end()
 
