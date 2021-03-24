@@ -137,7 +137,7 @@ def shutdown():
         ],
     ).run()
     if result:
-        # clear()
+        clear()
         print("VLIVE-BACKUP-BOT by @box_archived")
         exit()
 
