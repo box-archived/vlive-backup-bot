@@ -71,6 +71,10 @@ def dialog_yn(title, text):
     ).run()
 
 
+def dialog_download_end():
+    return dialog_yn("다운로드 완료", "다운로드가 완료되었습니다.\n다른 게시판을 추가로 다운로드 하겠습니까?")
+
+
 def query_license_agreement():
     lic = ""
     lic += '이 소프트웨어는 자유 소프트웨어로, GPL-3.0 License 를 따릅니다.\n'
@@ -238,7 +242,10 @@ def main():
 
     opt_ovp, opt_post, opt_amount = query_options()
 
-    return dialog_yn("다운로드 완료", "다운로드가 완료되었습니다.\n다른 게시판을 추가로 다운로드 하겠습니까?")
+    if not opt_ovp and not opt_post:
+        return dialog_download_end()
+
+    return dialog_download_end()
 
 
 if __name__ == '__main__':
