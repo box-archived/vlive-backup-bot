@@ -545,6 +545,7 @@ def proc_downloader(download_queue, channel_id, board_id):
                     comment_html += f'<div style="margin: 0 0 15px 15px; font-size:14px">{comment_item.body}</div>'
                     comment_html += '</div>'
 
+                os.makedirs(current_location, exist_ok=True)
                 with open(f"{current_location}/post-{current_target.post_id}.html", encoding="utf8", mode="w") as f:
                     f.write(str(soup))
                     f.write(comment_html)
