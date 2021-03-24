@@ -247,8 +247,8 @@ def query_membership():
                     report_progress(75)
                     # dump session
                     report_log("세션파일을 생성합니다.\n")
-                    with open("vlive-backup-bot.session", "wb") as f:
-                        vlivepy.dumpSession(sess, f)
+                    with open("vlive-backup-bot.session", "wb") as f_sess:
+                        vlivepy.dumpSession(sess, f_sess)
 
                     # break
                     report_log("로그인에 성공했습니다.\n")
