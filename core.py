@@ -118,16 +118,16 @@ def tool_write_meta(
 CONTENT-TYPE: {content_type}
 TITLE: {title}
 AUTHOR: {author_nickname}
-TIME: {vlivepy.parser.format_epoch(created_at, "%Y-%m-%d %H:%M:%S")}
+TIME: {format_epoch(created_at, "%Y-%m-%d %H:%M:%S")}
 ORIGIN: https://www.vlive.tv/post/{post_id}
 BOT-SAVED: {vlivepy.parser.format_epoch(time.time(), "%Y-%m-%d %H:%M:%S")}
 
-========VLIVE-BACKUP-BOT========
+================================
 
 """)
-
+    current_date = "[%s]" % format_epoch(created_at, "%Y-%m-%d")
     # write
-    with open(f"{location}/[{post_id}] info.txt", encoding="utf8", mode="w") as f:
+    with open(f"{location}/{current_date} {post_id}-info.txt", encoding="utf8", mode="w") as f:
         f.write(meta_text)
 
 
@@ -142,6 +142,7 @@ def shutdown():
     if result:
         clear()
         print("VLIVE-BACKUP-BOT by @box_archived")
+        print()
         exit()
 
 
@@ -452,8 +453,10 @@ def proc_downloader(download_queue, channel_id, board_id):
             )
             report_log(log_format % (initial_length - len(download_queue), initial_length))
 
-            current_location = "%s/[%s] %s" % (
-                base_dir, format_epoch(current_target.created_at, "%Y-%m-%d"), current_target.post_id
+            current_date = "[%s]" % format_epoch(current_target.created_at, "%Y-%m-%d")
+
+            current_location = "%s/%s %s" % (
+                base_dir, current_date, current_target.post_id
             )
 
             if current_target.has_official_video:
@@ -485,7 +488,7 @@ def proc_downloader(download_queue, channel_id, board_id):
                         tool_download_file(
                             url=max_source,
                             location=current_location,
-                            filename=tool_regex_window_name(ovv.title)
+                            filename=f"{current_date} {tool_regex_window_name(ovv.title)}"
                         )
                     except:
                         report_log("실패")
@@ -507,7 +510,7 @@ def proc_downloader(download_queue, channel_id, board_id):
                     img_cnt += 1
 
                     item: element
-                    dnld_image_name = "%s-img-%02d" % (current_target.post_id, img_cnt)
+                    dnld_image_name = "%s %s-img-%02d" % (current_date, current_target.post_id, img_cnt)
                     tool_download_file(
                         url=item['src'],
                         location=current_location,
@@ -523,7 +526,7 @@ def proc_downloader(download_queue, channel_id, board_id):
                     video_cnt += 1
 
                     # Poster get
-                    dnld_poster_name = "%s-poster-%02d" % (current_target.post_id, video_cnt)
+                    dnld_poster_name = "%s %s-poster-%02d" % (current_date, current_target.post_id, video_cnt)
                     tool_download_file(
                         url=item['poster'],
                         location=current_location,
@@ -532,7 +535,7 @@ def proc_downloader(download_queue, channel_id, board_id):
                     item['poster'] = f"{dnld_poster_name}.{tool_parse_url(item['poster'])[0]}"
 
                     # Video get
-                    dnld_video_name = "%s-video-%02d" % (current_target.post_id, video_cnt)
+                    dnld_video_name = "%s %s-video-%02d" % (current_date, current_target.post_id, video_cnt)
                     tool_download_file(
                         url=item['src'],
                         location=current_location,
@@ -547,13 +550,14 @@ def proc_downloader(download_queue, channel_id, board_id):
                     comment_html += '<div style="padding-top:5px;width:720px;border-top:1px solid #f2f2f2;border-bottom:1px solid #f2f2f2">'
                     comment_html += '<div style="margin: 15px 0 0 15px">'
                     comment_html += f'<span style="font-weight:700; font-size:13px; margin-right:10px">{comment_item.author_nickname}</span>'
-                    comment_html += f'<span style="font-size:12px; color:#777;">{vlivepy.parser.format_epoch(comment_item.created_at, "%Y-%m-%d %H:%M:%S")}</span>'
+                    comment_html += f'<span style="font-size:12px; color:#777;">{format_epoch(comment_item.created_at, "%Y-%m-%d %H:%M:%S")}</span>'
                     comment_html += '</div>'
                     comment_html += f'<div style="margin: 0 0 15px 15px; font-size:14px">{comment_item.body}</div>'
                     comment_html += '</div>'
 
                 os.makedirs(current_location, exist_ok=True)
-                with open(f"{current_location}/post-{current_target.post_id}.html", encoding="utf8", mode="w") as f:
+                with open(f"{current_location}/{current_date} {current_target.post_id}-post.html",
+                          encoding="utf8", mode="w") as f:
                     f.write(str(soup))
                     f.write(comment_html)
 
