@@ -415,6 +415,22 @@ def proc_load_post_list(target_channel, target_board, target_amount, membership)
     return post_list
 
 
+def query_use_cache(channel_id, board_id, post_list: deque):
+    cache_file_name = f"cache/{channel_id}_{board_id}.txt"
+    if os.path.isfile(cache_file_name):
+        opt_cache = dialog_yn("옵션", "게시판을 다운로드한 내역이 있습니다.\n기존에 받은 파일을 제외하시겠습니까?")
+        if opt_cache:
+            with open(cache_file_name, "r") as f:
+                cached_list = f.read().splitlines()
+            new_list = deque()
+            while post_list:
+                item: vlivepy.board.BoardPostItem = post_list.popleft()
+                if item.post_id not in cached_list:
+                    new_list.append(item)
+            return new_list
+    return post_list
+
+
 def query_post_select(post_list: deque, opt_ovp, opt_post):
     def item_parser(post_item: vlivepy.board.BoardPostItem):
         description = "[%s] %s" % (
@@ -475,7 +491,8 @@ def proc_downloader(download_queue, channel_id, board_id):
             with open("failed.txt", encoding="utf8", mode="a") as f_report:
                 f_report.write(f"https://www.vlive.tv/post/{post_id}\n")
         # set base dir
-        base_dir = f"downloaded/{channel_id}_{board_id}"
+        channel_board_pair = f"{channel_id}_{board_id}"
+        base_dir = f"downloaded/{channel_board_pair}"
 
         # set count of queue
         initial_length = len(download_queue)
@@ -623,6 +640,8 @@ def proc_downloader(download_queue, channel_id, board_id):
                 author_nickname=current_target.author_nickname,
                 created_at=current_target.created_at,
             )
+            with open(f"cache/{channel_board_pair}.txt", encoding="utf8", mode="a") as f:
+                f.write(f"{current_target.post_id}\n")
             time.sleep(0.3)
 
         # Download End
@@ -636,6 +655,8 @@ def proc_downloader(download_queue, channel_id, board_id):
 
 
 def main():
+    os.makedirs("downloaded", exist_ok=True)
+    os.makedirs("cache", exist_ok=True)
     clear()
     easy_mode = query_workflow_select()
 
@@ -661,6 +682,8 @@ def main():
         target_amount=opt_amount,
         membership=membership,
     )
+
+    post_list = query_use_cache(target_channel, target_board, post_list)
 
     # Post select dialog on adv-mode
     if not easy_mode:
