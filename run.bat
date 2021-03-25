@@ -8,7 +8,7 @@ echo ====================VLIVE-DOWNLOADER-BOT====================
 echo.
 echo                            LOADING...
 echo.
-echo.
+echo ============================================================
 
 IF EXIST venv (
 rmdir /S /Q venv
