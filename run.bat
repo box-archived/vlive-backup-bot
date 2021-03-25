@@ -16,7 +16,7 @@ python -m venv venv
 ECHO 의존 프로그램을 설치합니다.
 ECHO.
 venv\Scripts\python -m pip install --upgrade pip
-venv\Scrip\python -m pip install -r requirements.txt
+venv\Scripts\python -m pip install -r requirements.txt
 
 ECHO.
 ECHO 의존 프로그램 설치를 완료했습니다.
