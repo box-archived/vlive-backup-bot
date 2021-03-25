@@ -11,7 +11,10 @@ import vlivepy.board
 import vlivepy.parser
 import vlivepy.variables
 from vlivepy.parser import format_epoch
-from prompt_toolkit import PromptSession
+from prompt_toolkit import (
+    PromptSession,
+    ANSI
+)
 from prompt_toolkit.shortcuts import (
     set_title,
     message_dialog,
@@ -382,9 +385,10 @@ def proc_load_post_list(target_channel, target_board, target_amount, membership)
 
 def query_post_select(post_list: deque, opt_ovp, opt_post):
     def item_parser(post_item: vlivepy.board.BoardPostItem):
-        description = "[%s] https://www.vlive.tv/post/%s" % (
-            format_epoch(post_item.created_at, "%Y-%m-%d"), post_item.post_id
+        description = "[%s] %s" % (
+            format_epoch(post_item.created_at, "%Y-%m-%d"), post_item.title
         )
+        description = ANSI(description[:30].ljust(35))
         return post_item, description
 
     filtered_list = list()
