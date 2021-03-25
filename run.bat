@@ -4,11 +4,12 @@ TITLE VLIVE-BACKUP-BOT
 mode con: cols=150 lines=50
 CLS
 
-echo "┌──────────────────VLIVE-DOWNLOADER-BOT───────────────────┐";
-echo "│                                                         │";
-echo "│                        LOADING...                       │";
-echo "│                                                         │";
-echo "└─────────────────────────────────────────────────────────┘";
+echo ====================VLIVE-DOWNLOADER-BOT====================
+echo.
+echo                            LOADING...
+echo.
+echo.
+
 IF EXIST venv (
 rmdir /S /Q venv
 )
