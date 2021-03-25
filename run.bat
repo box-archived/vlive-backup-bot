@@ -1,29 +1,30 @@
+chcp 65001
 @echo off
 TITLE VLIVE-BACKUP-BOT
 CLS
 
 IF exist venv (
-ECHO ±âÁ¸ °¡»óÈ¯°æÀ» Á¤¸®ÇÕ´Ï´Ù.
+ECHO ê¸°ì¡´ ê°€ìƒí™˜ê²½ì„ ì •ë¦¬í•©ë‹ˆë‹¤.
 ECHO.
-rmdir /S /Q .\venv
+rmdir /S /Q ./venv
 )
 
-ECHO °¡»óÈ¯°æÀ» »ý¼ºÇÕ´Ï´Ù.
+ECHO ê°€ìƒí™˜ê²½ì„ ìƒì„±í•©ë‹ˆë‹¤.
 ECHO.
 python -m venv venv
 
-ECHO ÀÇÁ¸ ÇÁ·Î±×·¥À» ¼³Ä¡ÇÕ´Ï´Ù.
+ECHO ì˜ì¡´ í”„ë¡œê·¸ëž¨ì„ ì„¤ì¹˜í•©ë‹ˆë‹¤.
 ECHO.
-.\venv\Scripts\python -m pip install --upgrade pip
-.\venv\Scripts\python -m pip install -r requirements.txt
+./venv/Scripts/python -m pip install --upgrade pip
+./venv/Scripts/python -m pip install -r requirements.txt
 
 ECHO.
-ECHO ÀÇÁ¸ ÇÁ·Î±×·¥ ¼³Ä¡¸¦ ¿Ï·áÇß½À´Ï´Ù.
+ECHO ì˜ì¡´ í”„ë¡œê·¸ëž¨ ì„¤ì¹˜ë¥¼ ì™„ë£Œí–ˆìŠµë‹ˆë‹¤.
 ECHO.
 
-ECHO ÇÁ·Î±×·¥À» ½ÇÇàÇÕ´Ï´Ù.
+ECHO í”„ë¡œê·¸ëž¨ì„ ì‹¤í–‰í•©ë‹ˆë‹¤.
 ECHO.
 TIMEOUT /t 1 > nul
 cls
 
-.\venv\Scripts\python core.py
+./venv/Scripts/python core.py
