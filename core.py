@@ -49,9 +49,19 @@ def tool_remove_emoji(plain_text):
         "\U0001FA00-\U0001FA6F"
         "\U0001FA70-\U0001FAFF"
         "\U00002702-\U000027B0"
+        "\u3200-\u32ff"
+        "\u2460-\u24ff"
+        "\u2640-\u2642"
+        "\u2600-\u2B55"
+        "\u200d"
+        "\u23cf"
+        "\u23e9"
+        "\u231a"
+        "\ufe0f"  # dingbats
+        "\u3030"
         "])"
     )
-    return emoji_regex.sub("□", plain_text).encode("cp949", "ignore").decode("cp949")
+    return emoji_regex.sub("?", plain_text).encode("cp949", "ignore").decode("cp949")
 
 
 def tool_clip_text_length(plain_text, length):
@@ -392,7 +402,7 @@ def query_post_select(post_list: deque, opt_ovp, opt_post):
     def item_parser(post_item: vlivepy.board.BoardPostItem):
         description = "[%s] %s" % (
             format_epoch(post_item.created_at, "%Y-%m-%d"),
-            tool_clip_text_length(tool_remove_emoji(post_item.title), 45)
+            tool_clip_text_length(tool_remove_emoji(post_item.title), 50)
         )
         return post_item, description
 
