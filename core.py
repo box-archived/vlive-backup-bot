@@ -469,6 +469,10 @@ def proc_downloader(download_queue, channel_id, board_id):
                 # Generate OfficialVideoVOD object
                 ovv = ovp.official_video()
 
+                if ovv.vod_secure_status == "COMPLETE":
+                    report_log("실패 (DRM-다운로드 불가)")
+                    continue
+
                 # Find max res source
                 try:
                     max_source = vlivepy.parser.max_res_from_play_info(ovv.getVodPlayInfo())['source']
