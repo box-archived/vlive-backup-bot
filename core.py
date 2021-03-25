@@ -13,6 +13,7 @@ import vlivepy.variables
 from vlivepy.parser import format_epoch
 from prompt_toolkit import PromptSession
 from prompt_toolkit.shortcuts import (
+    set_title,
     message_dialog,
     input_dialog,
     button_dialog,
@@ -22,6 +23,7 @@ from prompt_toolkit.shortcuts import (
 )
 import pyclip
 
+set_title("VLIVE-BACKUP-BOT")
 ptk_session = PromptSession()
 vlivepy.variables.override_gcc = "US"
 
