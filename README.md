@@ -19,7 +19,7 @@ SmartScreen 보호 알림이 표시되었다면, <u>추가 정보</u> 버튼을 
 명령 프롬프트를 이용하여 실행 가능합니다.
 명령 프롬프트를 열고 __run.bat__ 파일을 드래그 하여 실행할 수 있습니다.
 ```console
-C:\> path/to/vlive-backup-bot/run.bat
+C:\> path\to\vlive-backup-bot\run.bat
 ```
 
 ### Other OS
