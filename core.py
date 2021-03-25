@@ -109,12 +109,30 @@ def tool_download_file(url: str, location: str, filename: str = None):
 
     # create dir
     os.makedirs(location, exist_ok=True)
+    try:
+        with requests.get(url, stream=True) as r:
+            r.raise_for_status()
+            with open(f"{location}/{filename}.{ext}", 'wb') as f:
+                for chunk in r.iter_content(chunk_size=8192):
+                    f.write(chunk)
+        return True
+    except:
+        return False
 
-    with requests.get(url, stream=True) as r:
-        r.raise_for_status()
-        with open(f"{location}/{filename}.{ext}", 'wb') as f:
-            for chunk in r.iter_content(chunk_size=8192):
-                f.write(chunk)
+
+def proc_redundant_download(url: str, location: str, filename: str = None):
+    for item in range(5):
+        if tool_download_file(
+            url=url,
+            location=location,
+            filename=filename
+        ):
+            break
+    else:
+        return False
+
+    return True
+
 
 
 def tool_write_meta(
@@ -453,6 +471,10 @@ def query_post_select(post_list: deque, opt_ovp, opt_post):
 
 def proc_downloader(download_queue, channel_id, board_id):
     def callback_fn(report_progress, report_log):
+        def report_fail(post_id):
+            report_log("실패")
+            with open("failed.txt", encoding="utf8", mode="a") as f_report:
+                f_report.write(f"https://www.vlive.tv/post/{post_id}\n")
         # set base dir
         base_dir = f"downloaded/{channel_id}_{board_id}"
 
@@ -481,36 +503,41 @@ def proc_downloader(download_queue, channel_id, board_id):
             if current_target.has_official_video:
                 # type OfficialVideoPost
 
-                ovp = current_target.to_object()
-
-                # continue when live
-                if ovp.official_video_type != "VOD":
-                    report_log("건너뜀 (VOD 아님)")
+                try:
+                    ovp = current_target.to_object()
+                except:
+                    report_fail(current_target.post_id)
                     continue
 
-                # Generate OfficialVideoVOD object
-                ovv = ovp.official_video()
+                # Pass when live
+                if ovp.official_video_type != "VOD":
+                    report_fail(current_target.post_id)
+                    continue
+
+                try:
+                    ovv = ovp.official_video()
+                except:
+                    report_fail(current_target.post_id)
+                    continue
 
                 if ovv.vod_secure_status == "COMPLETE":
-                    report_log("실패 (DRM-다운로드 불가)")
+                    report_fail(current_target.post_id)
                     continue
 
                 # Find max res source
                 try:
                     max_source = vlivepy.parser.max_res_from_play_info(ovv.getVodPlayInfo())['source']
                 except KeyError:
-                    report_log("실패")
+                    report_fail(current_target.post_id)
                     continue
                 else:
                     # download
-                    try:
-                        tool_download_file(
-                            url=max_source,
-                            location=current_location,
-                            filename=f"{current_date} {tool_regex_window_name(ovv.title)}"
-                        )
-                    except:
-                        report_log("실패")
+                    if not proc_redundant_download(
+                        url=max_source,
+                        location=current_location,
+                        filename=f"{current_date} {tool_regex_window_name(ovv.title)}"
+                    ):
+                        report_fail(current_target.post_id)
                         continue
                     else:
                         report_log("성공")
@@ -530,11 +557,13 @@ def proc_downloader(download_queue, channel_id, board_id):
 
                     item: element
                     dnld_image_name = "%s %s-img-%02d" % (current_date, current_target.post_id, img_cnt)
-                    tool_download_file(
+                    if not proc_redundant_download(
                         url=item['src'],
                         location=current_location,
                         filename=dnld_image_name
-                    )
+                    ):
+                        report_fail(current_target.post_id)
+                        continue
                     item['src'] = f"{dnld_image_name}.{tool_parse_url(item['src'])[0]}"
 
                 # download video
@@ -546,20 +575,24 @@ def proc_downloader(download_queue, channel_id, board_id):
 
                     # Poster get
                     dnld_poster_name = "%s %s-poster-%02d" % (current_date, current_target.post_id, video_cnt)
-                    tool_download_file(
+                    if not proc_redundant_download(
                         url=item['poster'],
                         location=current_location,
                         filename=dnld_poster_name
-                    )
+                    ):
+                        report_fail(current_target.post_id)
+                        continue
                     item['poster'] = f"{dnld_poster_name}.{tool_parse_url(item['poster'])[0]}"
 
                     # Video get
                     dnld_video_name = "%s %s-video-%02d" % (current_date, current_target.post_id, video_cnt)
-                    tool_download_file(
+                    if not proc_redundant_download(
                         url=item['src'],
                         location=current_location,
                         filename=dnld_video_name
-                    )
+                    ):
+                        report_fail(current_target.post_id)
+                        continue
                     item['src'] = f"{dnld_video_name}.{tool_parse_url(item['src'])[0]}"
 
                 # Get star-comment
