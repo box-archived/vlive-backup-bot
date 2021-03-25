@@ -1,6 +1,12 @@
 chcp 65001
 @echo off
 
+SET CURDIR=%~dp0
+SET CURDRIVE=%CURDIR:~0,2%
+
+%CURDRIVE%
+CD %CURDIR%
+
 for /f "tokens=* USEBACKQ" %%a in (`python --version`) DO (
 SET PV=%%a
 )
