@@ -11,7 +11,9 @@ import vlivepy.board
 import vlivepy.parser
 import vlivepy.variables
 from vlivepy.parser import format_epoch
-from prompt_toolkit import PromptSession
+from prompt_toolkit import (
+    PromptSession,
+)
 from prompt_toolkit.shortcuts import (
     set_title,
     message_dialog,
@@ -49,7 +51,14 @@ def tool_remove_emoji(plain_text):
         "\U00002702-\U000027B0"
         "])"
     )
-    return emoji_regex.sub("_", plain_text)
+    return emoji_regex.sub("□", plain_text).encode("cp949", "ignore").decode("cp949")
+
+
+def tool_clip_text_length(plain_text, length):
+    if len(plain_text) > length:
+        plain_text = plain_text[:length-3] + ".._"
+
+    return plain_text
 
 
 def tool_regex_window_name(plain_text):
@@ -59,8 +68,7 @@ def tool_regex_window_name(plain_text):
 
     safe_name = regex_window_name.sub("_", regex_front_space.sub("", plain_text))
 
-    if len(safe_name) > 41:
-        safe_name = safe_name[:38] + ".._"
+    safe_name = tool_clip_text_length(safe_name, 41)
 
     return safe_name
 
@@ -382,8 +390,9 @@ def proc_load_post_list(target_channel, target_board, target_amount, membership)
 
 def query_post_select(post_list: deque, opt_ovp, opt_post):
     def item_parser(post_item: vlivepy.board.BoardPostItem):
-        description = "[%s] https://www.vlive.tv/post/%s" % (
-            format_epoch(post_item.created_at, "%Y-%m-%d"), post_item.post_id
+        description = "[%s] %s" % (
+            format_epoch(post_item.created_at, "%Y-%m-%d"),
+            tool_clip_text_length(tool_remove_emoji(post_item.title), 45)
         )
         return post_item, description
 
