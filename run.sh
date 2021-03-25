@@ -48,7 +48,7 @@ if [ -d "venv" ]; then
   rm -rf venv
 fi
 
-python -m venv venv
+$PCOMMAND -m venv venv
 
 ./venv/bin/$PCOMMAND -m pip install -q -q -q --upgrade pip
 ./venv/bin/$PCOMMAND -m pip install -q -q -q -r requirements.txt
