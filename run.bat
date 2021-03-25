@@ -1,5 +1,21 @@
 chcp 65001
 @echo off
+
+for /f "tokens=* USEBACKQ" %%a in (`python --version`) DO (
+SET PV=%%a
+)
+)
+SET PV=%PV:~0,8%
+CLS
+IF NOT "%PV%" == "Python 3" (
+ECHO Python 3.x not found
+ECHO Please install python
+ECHO.
+pause
+start https://www.python.org/downloads/
+exit
+)
+
 TITLE VLIVE-BACKUP-BOT
 mode con: cols=60 lines=9
 CLS
