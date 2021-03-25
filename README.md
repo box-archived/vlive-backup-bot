@@ -1,4 +1,4 @@
-# vlive-backup
+# vlive-backup-bot
 [![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/box-archived/vlive-backup)](https://github.com/box-archived/vlive-backup/releases)
 
 Auto backup bot for vlive
