@@ -28,3 +28,4 @@ TIMEOUT /t 1 > nul
 cls
 
 ./venv/Scripts/python core.py
+PAUSE
