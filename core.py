@@ -35,7 +35,7 @@ def tool_format_creator(max_int):
     return "%%%dd/%%%dd" % (max_len, max_len)
 
 
-def tool_remove_emoji(plain_text):
+def tool_remove_emoji(plain_text, sub):
     emoji_regex = re.compile(
         r"(["
         "\U0001F1E0-\U0001F1FF"
@@ -61,7 +61,7 @@ def tool_remove_emoji(plain_text):
         "\u3030"
         "])"
     )
-    return emoji_regex.sub("?", plain_text).encode("cp949", "ignore").decode("cp949")
+    return emoji_regex.sub(sub, plain_text).encode("cp949", "ignore").decode("cp949")
 
 
 def tool_clip_text_length(plain_text, length):
@@ -125,14 +125,13 @@ def proc_redundant_download(url: str, location: str, filename: str = None):
         if tool_download_file(
             url=url,
             location=location,
-            filename=filename
+            filename=tool_remove_emoji(filename, "_")
         ):
             break
     else:
         return False
 
     return True
-
 
 
 def tool_write_meta(
@@ -420,7 +419,7 @@ def query_post_select(post_list: deque, opt_ovp, opt_post):
     def item_parser(post_item: vlivepy.board.BoardPostItem):
         description = "[%s] %s" % (
             format_epoch(post_item.created_at, "%Y-%m-%d"),
-            tool_clip_text_length(tool_remove_emoji(post_item.title), 50)
+            tool_clip_text_length(tool_remove_emoji(post_item.title, "?"), 50)
         )
         return post_item, description
 
@@ -535,7 +534,7 @@ def proc_downloader(download_queue, channel_id, board_id):
                     if not proc_redundant_download(
                         url=max_source,
                         location=current_location,
-                        filename=f"{current_date} {tool_regex_window_name(ovv.title)}"
+                        filename=f"{current_date} {current_target.post_id}-video"
                     ):
                         report_fail(current_target.post_id)
                         continue
