@@ -50,9 +50,9 @@ fi
 
 python -m venv venv
 
-./venv/bin/python -m pip install -q -q -q --upgrade pip
-./venv/bin/python -m pip install -q -q -q -r requirements.txt
+./venv/bin/$PCOMMAND -m pip install -q -q -q --upgrade pip
+./venv/bin/$PCOMMAND -m pip install -q -q -q -r requirements.txt
 
 printf '\e[8;50;150t'
 clear
-./venv/bin/python core.py
+./venv/bin/$PCOMMAND core.py
