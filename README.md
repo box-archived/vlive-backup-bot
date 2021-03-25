@@ -1,5 +1,6 @@
 # vlive-backup-bot
 [![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/box-archived/vlive-backup)](https://github.com/box-archived/vlive-backup/releases)
+[![Discord](https://img.shields.io/discord/824605893885820939)](https://discord.gg/84sVr2mQKX)
 
 Auto backup bot for vlive
 
