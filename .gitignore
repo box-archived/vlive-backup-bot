@@ -133,3 +133,5 @@ dmypy.json
 .dev.py
 vlive-backup-bot.session
 downloaded
+failed.txt
+downloaded.cache
