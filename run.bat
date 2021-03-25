@@ -1,5 +1,5 @@
 @echo off
-REM Apply UTF-8 encoding
+TITLE VLIVE-BACKUP-BOT
 chcp 65001
 CLS
 
