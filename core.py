@@ -114,12 +114,13 @@ def tool_write_meta(
     # format
     meta_text = (
         f"""========VLIVE-BACKUP-BOT========
-TITLE: {title}
+
 CONTENT-TYPE: {content_type}
+TITLE: {title}
 AUTHOR: {author_nickname}
 TIME: {vlivepy.parser.format_epoch(created_at, "%Y-%m-%d %H:%M:%S")}
-BOT-SAVED: {vlivepy.parser.format_epoch(time.time(), "%Y-%m-%d %H:%M:%S")}
 ORIGIN: https://www.vlive.tv/post/{post_id}
+BOT-SAVED: {vlivepy.parser.format_epoch(time.time(), "%Y-%m-%d %H:%M:%S")}
 
 ========VLIVE-BACKUP-BOT========
 
