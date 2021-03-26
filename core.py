@@ -283,7 +283,7 @@ def query_update(result: tuple):
         nonlocal result
         nonlocal update_success
         report_progress(0)
-        report_log("업데이트 파일을 받아옵니다.")
+        report_log("업데이트 파일을 받아옵니다.\n")
         sr = reqWrapper.get(result[1])
         if sr.success:
             try:
@@ -298,7 +298,7 @@ def query_update(result: tuple):
                     f.write(sr.response.content)
 
                 report_progress(35)
-                report_log("업데이트 파일을 확인합니다.")
+                report_log("업데이트 파일을 확인합니다.\n")
                 # extract
                 from zipfile import ZipFile
                 with ZipFile("_update/data.zip") as f:
@@ -313,7 +313,7 @@ def query_update(result: tuple):
                         target = item
 
                 report_progress(50)
-                report_log("업데이트를 적용합니다.")
+                report_log("업데이트를 적용합니다.\n")
                 # write
                 for item in glob(f"{target}/*.*"):
                     filename = item.rsplit("\\", 1)[-1]
@@ -323,7 +323,7 @@ def query_update(result: tuple):
                             fo.write(fi.read())
 
                 report_progress(90)
-                report_log("받은 파일을 정리합니다.")
+                report_log("받은 파일을 정리합니다.\n")
                 # Clean up path
                 if os.path.isdir("_update"):
                     from shutil import rmtree
