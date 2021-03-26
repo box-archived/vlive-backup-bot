@@ -3,9 +3,10 @@ from collections import deque
 import time
 import re
 import os
+from webbrowser import open_new_tab
 
 from bs4 import BeautifulSoup, element
-import requests
+import reqWrapper
 import vlivepy
 import vlivepy.board
 import vlivepy.parser
@@ -25,9 +26,71 @@ from prompt_toolkit.shortcuts import (
 )
 import pyclip
 
+__version__ = "0.0.8"
+
 set_title("VLIVE-BACKUP-BOT")
 ptk_session = PromptSession()
 vlivepy.variables.override_gcc = "US"
+
+
+def dialog_splash():
+    has_update = False
+    zipball = None
+    info_url = None
+
+    def callback_fn(report_progress, report_log):
+        nonlocal has_update
+        nonlocal zipball
+        nonlocal info_url
+        report_progress(0)
+        content = rf"""
+
+██╗   ██╗██╗     ██╗██╗   ██╗███████╗            
+██║   ██║██║     ██║██║   ██║██╔════╝            
+██║   ██║██║     ██║██║   ██║█████╗              
+╚██╗ ██╔╝██║     ██║╚██╗ ██╔╝██╔══╝              
+ ╚████╔╝ ███████╗██║ ╚████╔╝ ███████╗            
+  ╚═══╝  ╚══════╝╚═╝  ╚═══╝  ╚══════╝            
+                                                 
+██████╗  █████╗  ██████╗██╗  ██╗██╗   ██╗██████╗ 
+██╔══██╗██╔══██╗██╔════╝██║ ██╔╝██║   ██║██╔══██╗
+██████╔╝███████║██║     █████╔╝ ██║   ██║██████╔╝
+██╔══██╗██╔══██║██║     ██╔═██╗ ██║   ██║██╔═══╝ 
+██████╔╝██║  ██║╚██████╗██║  ██╗╚██████╔╝██║     
+╚═════╝ ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝ ╚═════╝ ╚═╝     
+                                                 
+██████╗  ██████╗ ████████╗                       
+██╔══██╗██╔═══██╗╚══██╔══╝                       
+██████╔╝██║   ██║   ██║                          
+██╔══██╗██║   ██║   ██║                          
+██████╔╝╚██████╔╝   ██║         VER {__version__}                 
+╚═════╝  ╚═════╝    ╚═╝         by @box_archived                
+"""
+        report_log(content)
+
+        time.sleep(0.5)
+
+        report_progress(50)
+        report_log("\n 업데이트 확인중...")
+        sr = reqWrapper.get("https://api.github.com/repos/box-archived/vlive-backup-bot/releases/latest", status=[200])
+        if sr.success:
+            release_data = sr.response.json()
+            latest = release_data['tag_name'][1:]
+            if __version__ != latest:
+                has_update = True
+                zipball = release_data["zipball_url"]
+                info_url = release_data["html_url"]
+
+        time.sleep(1)
+        report_progress(100)
+
+    progress_dialog(
+        title="VLIVE-BACKUP-BOT",
+        text="",
+        run_callback=callback_fn,
+    ).run()
+
+    return has_update, zipball, info_url
 
 
 def tool_format_creator(max_int):
@@ -101,6 +164,7 @@ def tool_parse_url(url: str):
 
 
 def tool_download_file(url: str, location: str, filename: str = None):
+    headers = {**vlivepy.variables.HeaderCommon}
 
     ext, name = tool_parse_url(url)
 
@@ -110,7 +174,7 @@ def tool_download_file(url: str, location: str, filename: str = None):
     # create dir
     os.makedirs(location, exist_ok=True)
     try:
-        with requests.get(url, stream=True) as r:
+        with reqWrapper.get(url, stream=True, headers=headers) as r:
             r.raise_for_status()
             with open(f"{location}/{filename}.{ext}", 'wb') as f:
                 for chunk in r.iter_content(chunk_size=8192):
@@ -201,6 +265,87 @@ def dialog_yn(title, text):
 
 def dialog_download_end():
     return dialog_yn("다운로드 완료", "다운로드가 완료되었습니다.\n다른 게시판을 추가로 다운로드 하겠습니까?")
+
+
+def query_update(result: tuple):
+    if not result[0]:
+        return False
+
+    update = dialog_yn(
+        title="업데이트 알림",
+        text="새로운 업데이트가 발견되었습니다\n업데이트를 다운로드 하시겠습니까?\n\n[주의] 업데이트 중에는 프로그램을 종료하지 마세요."
+    )
+
+    update_success = False
+
+    def callback_fn(report_progress, report_log):
+        nonlocal result
+        nonlocal update_success
+        report_progress(0)
+        report_log("업데이트 파일을 받아옵니다.")
+        sr = reqWrapper.get(result[1])
+        if sr.success:
+            try:
+                # Overwrite path
+                if os.path.isdir("_update"):
+                    from shutil import rmtree
+                    rmtree("_update")
+                os.makedirs("_update", exist_ok=True)
+
+                # Write update zip
+                with open("_update/data.zip", "wb") as f:
+                    f.write(sr.response.content)
+
+                report_progress(35)
+                report_log("업데이트 파일을 확인합니다.")
+                # extract
+                from zipfile import ZipFile
+                with ZipFile("_update/data.zip") as f:
+                    f.extractall("_update")
+
+                # find
+                from glob import glob
+                files = glob("_update/*")
+                target = ''
+                for item in files:
+                    if "data.zip" not in item:
+                        target = item
+
+                report_progress(50)
+                report_log("업데이트를 적용합니다.")
+                # write
+                for item in glob(f"{target}/*.*"):
+                    filename = item.rsplit("\\", 1)[-1]
+
+                    with open(item, "rb") as fi:
+                        with open(filename, "wb") as fo:
+                            fo.write(fi.read())
+
+                report_progress(90)
+                report_log("받은 파일을 정리합니다.")
+                # Clean up path
+                if os.path.isdir("_update"):
+                    from shutil import rmtree
+                    rmtree("_update")
+
+                    update_success = True
+                report_progress(100)
+            except:
+                report_progress(100)
+        report_progress(100)
+
+    if update:
+        progress_dialog("업데이트", "", callback_fn).run()
+        if update_success:
+            message_dialog("업데이트 성공", "업데이트가 완료되었습니다.\n적용을 위해 프로그램을 재실행 해주세요.").run()
+            exit()
+            return True
+        else:
+            message_dialog("업데이트 실패", "업데이트에 실패했습니다.\n수동으로 업데이트를 진행해 주세요.").run()
+            open_new_tab(result[2])
+            return False
+
+    return False
 
 
 def query_license_agreement():
@@ -696,6 +841,8 @@ def main():
 
 
 if __name__ == '__main__':
+    query_update(dialog_splash())
+
     query_license_agreement()
 
     while True:

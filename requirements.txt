@@ -1,3 +1,5 @@
 prompt-toolkit>=3.0.18
 vlivepy==1.1.1
+reqWrapper>=0.2.1
 pyclip>=0.5.4
+beautifulsoup4>=4.9.3
