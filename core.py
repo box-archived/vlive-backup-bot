@@ -6,6 +6,7 @@ import os
 from webbrowser import open_new_tab
 
 from bs4 import BeautifulSoup, element
+import requests
 import reqWrapper
 import vlivepy
 import vlivepy.board
@@ -174,7 +175,7 @@ def tool_download_file(url: str, location: str, filename: str = None):
     # create dir
     os.makedirs(location, exist_ok=True)
     try:
-        with reqWrapper.get(url, stream=True, headers=headers) as r:
+        with requests.get(url, stream=True, headers=headers) as r:
             r.raise_for_status()
             with open(f"{location}/{filename}.{ext}", 'wb') as f:
                 for chunk in r.iter_content(chunk_size=8192):
