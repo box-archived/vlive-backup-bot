@@ -101,28 +101,17 @@ def tool_format_creator(max_int):
 
 def tool_remove_emoji(plain_text, sub):
     emoji_regex = re.compile(
-        r"(["
-        "\U0001F1E0-\U0001F1FF"
-        "\U0001F300-\U0001F5FF"
-        "\U0001F600-\U0001F64F"
-        "\U0001F680-\U0001F6FF"
-        "\U0001F700-\U0001F77F"
-        "\U0001F780-\U0001F7FF"
-        "\U0001F800-\U0001F8FF"
-        "\U0001F900-\U0001F9FF"
-        "\U0001FA00-\U0001FA6F"
-        "\U0001FA70-\U0001FAFF"
-        "\U00002702-\U000027B0"
-        "\u3200-\u32ff"
-        "\u2460-\u24ff"
-        "\u2640-\u2642"
-        "\u2600-\u2B55"
-        "\u200d"
-        "\u23cf"
-        "\u23e9"
-        "\u231a"
-        "\ufe0f"  # dingbats
-        "\u3030"
+        r"([^"
+        "\u0020-\u007e"  # 기본 문자
+        # "\u0080-\u024f"  # 라틴 기본
+        "\u1100-\u11ff"  # 한글 자모
+        "\u3131-\u318f"  # 호환용 한글
+        "\uac00-\ud7a3"  # 한글 음절
+        "\u3040-\u309f"  # 히라가나
+        "\u30a0-\u30ff"  # 가타카나
+        "\u2e80-\u2eff"  # CJK 부수보충
+        "\u4e00-\u9fbf"  # CJK 통합 한자
+        "\u3400-\u4dbf"  # CJK 통합 한자 확장 - A
         "])"
     )
     return emoji_regex.sub(sub, plain_text).encode("cp949", "ignore").decode("cp949")
