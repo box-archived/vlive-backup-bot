@@ -8,8 +8,12 @@ VLIVE의 게시판의 게시물을 모두 다운로드 할 수 있는 봇입니�
 
 ## 설치 및 실행
 3.7 이상의 파이썬이 필요합니다.
-파이썬은 [python.org](https://www.python.org/downloads/) 에서 다운받을 수 있으며, 
-설치 방법은 [해당 링크](https://wikidocs.net/8) 의 방법을 따라 주시길 바랍니다.
+파이썬은 [python.org](https://www.python.org/downloads/) 에서 다운받을 수 있습니다.
+
+윈도우에서 설치 시 __Add Python 3.x to PATH__ 항목을 반드시 체크하고 설치해 주세요.
+
+![Untitled-2](https://user-images.githubusercontent.com/76082716/112562713-4488a880-8e1b-11eb-9a8b-fce406cd4957.jpg)
+
 
 ### Windows 7, 8, 10
 다운로드 한 소스코드의 압축을 풀고 __run.bat__ 파일을 실행합니다.
@@ -45,7 +49,7 @@ VLIVE 백업 봇에서는 멤버십 포스트 저장을 위해 사용자의 이�
 소셜 로그인 계정은 [프로필 설정 페이지](https://www.vlive.tv/my/profile) 에서 이메일과 비밀번호를 등록해야 합니다. 
 로그인에는 해당 이메일과 비밀번호를 사용합니다.
 
-로그인 정보는 __vlive-backup-bot.session__ 파일로 보관되며 더이상 사용하지 않을 시 안전하게 삭제하여 주세요.
+로그인 정보는 __cache__ 폴더의 `vlive-backup-bot.session` 파일로 보관되며 더이상 사용하지 않을 시 안전하게 삭제하여 주세요.
 
 ### 실패 내역
 다운로드에 실패한 포스트의 목록은 __failed.txt__ 파일로 저장됩니다.
@@ -58,7 +62,7 @@ __cache__ 폴더에는 다운로드 한 내역을 관리하기 위한 파일이 
 `채널코드_게시판코드.txt`파일을 제거하거나 수정하여 다운로드 내역을 정리하고 다시 받을 수 있습니다. 
 
 ### 설정 이동
-새로 다운받은 버전으로 기존 설정을 이동하려면 `cache`폴더와 `vlive-backup-bot.session` 파일을 이동해 주세요.
+새로 다운받은 버전으로 기존 설정을 이동하려면 `cache`폴더를 이동해 주세요.
 
 다운로드 한 파일도 이동혀려면 `downloaded`폴더도 함께 이동 해 주세요.
 
