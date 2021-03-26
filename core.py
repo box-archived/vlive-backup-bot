@@ -520,24 +520,27 @@ def proc_load_post_list(target_channel, target_board, target_amount, membership)
                 kwargs.update({"session": vlivepy.loadSession(f)})
 
         it = vlivepy.board.getBoardPostsIter(target_channel, target_board, **kwargs)
-
         cnt = 0
         page = 1
-        for item in it:
-            if cnt == 0:
-                report_log("%03d 페이지를 로드합니다\n" % page)
-                page += 1
+        try:
+            for item in it:
+                if cnt == 0:
+                    report_log("%03d 페이지를 로드합니다\n" % page)
+                    page += 1
 
-            cnt += 1
+                cnt += 1
 
-            post_list.append(item)
+                post_list.append(item)
 
-            if cnt == 20:
-                cnt = 0
-            if len(post_list) == target_amount:
-                break
+                if cnt == 20:
+                    cnt = 0
+                if len(post_list) == target_amount:
+                    break
 
-        report_progress(100)
+            report_progress(100)
+        except vlivepy.exception.APIServerResponseError:
+            post_list = None
+            report_progress(100)
 
     progress_dialog(
         title="게시물 로드중...",
@@ -815,6 +818,9 @@ def main():
         target_amount=opt_amount,
         membership=membership,
     )
+    if post_list is None:
+        dialog_error_message("이 게시판을 로드할 권한이 없습니다.")
+        return dialog_download_end()
 
     post_list = query_use_cache(target_channel, target_board, post_list)
 
