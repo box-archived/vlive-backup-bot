@@ -27,7 +27,7 @@ from prompt_toolkit.shortcuts import (
 )
 import pyclip
 
-__version__ = "0.1.1"
+__version__ = "0.1.2"
 
 set_title("VLIVE-BACKUP-BOT")
 ptk_session = PromptSession()
