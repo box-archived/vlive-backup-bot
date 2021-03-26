@@ -530,14 +530,8 @@ def query_options():
 
 
 def query_realname():
-    return button_dialog(
-        title="옵션",
-        text="파일을 저장할 때 사용할 파일명의 형식을 선택해 주세요.",
-        buttons=[
-            ('글번호', False),
-            ('실제제목', True),
-        ],
-    ).run()
+    return dialog_yn("옵션", "저장되는 파일명으로 브이라이브 원본의 제목을 사용하시겠습니까?\n"
+                           "아니요 선택시 글 번호로만 저장됩니다.\n\n(제목으로 저장이 불가능 한 경우 글 번호로 저장됩니다)")
 
 
 def proc_load_post_list(target_channel, target_board, target_amount, membership):
