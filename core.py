@@ -305,7 +305,7 @@ def query_update(result: tuple):
                 report_log("업데이트를 적용합니다.\n")
                 # write
                 for item in glob(f"{target}/*.*"):
-                    filename = item.rsplit("\\", 1)[-1]
+                    filename = item.replace("\\", "/").rsplit("/", 1)[-1]
 
                     with open(item, "rb") as fi:
                         with open(filename, "wb") as fo:
