@@ -32,7 +32,7 @@ printf '\e[8;9;60t'
 
 clear
 echo
-echo ====================VLIVE-DOWNLOADER-BOT====================
+echo ======================VLIVE-BACKUP-BOT======================
 echo
 echo
 echo "                           LOADING..."
