@@ -99,7 +99,10 @@ def tool_format_creator(max_int):
     return "%%%dd/%%%dd" % (max_len, max_len)
 
 
-def tool_remove_emoji(plain_text, sub):
+def tool_remove_emoji(plain_text, sub, allow_emoji=False):
+    uni_emoji = ""
+    if allow_emoji:
+        uni_emoji = "\U0001F1E0-\U0001FAFF\U00002702-\U000027B0"
     emoji_regex = re.compile(
         r"([^"
         "\u0020-\u007e"  # 기본 문자
@@ -112,9 +115,14 @@ def tool_remove_emoji(plain_text, sub):
         "\u2e80-\u2eff"  # CJK 부수보충
         "\u4e00-\u9fbf"  # CJK 통합 한자
         "\u3400-\u4dbf"  # CJK 통합 한자 확장 - A
+        f"{uni_emoji}"
         "])"
     )
-    return emoji_regex.sub(sub, plain_text).encode("cp949", "ignore").decode("cp949")
+
+    if allow_emoji:
+        return emoji_regex.sub(sub, plain_text)
+    else:
+        return emoji_regex.sub(sub, plain_text).encode("cp949", "ignore").decode("cp949")
 
 
 def tool_clip_text_length(plain_text, length):
@@ -127,11 +135,9 @@ def tool_clip_text_length(plain_text, length):
 def tool_regex_window_name(plain_text):
     # remove front space
     regex_front_space = re.compile(r"^(\s+)")
-    regex_window_name = re.compile(r'[<>:"\\/|?*~]')
+    regex_window_name = re.compile(r'[<>:"\\/|?*~%]')
 
     safe_name = regex_window_name.sub("_", regex_front_space.sub("", plain_text))
-
-    safe_name = tool_clip_text_length(safe_name, 41)
 
     return safe_name
 
@@ -153,23 +159,40 @@ def tool_parse_url(url: str):
     return ext_split[-1], filename
 
 
-def tool_download_file(url: str, location: str, filename: str = None):
+def tool_download_file(url: str, location: str, filename: str = None,):
     headers = {**vlivepy.variables.HeaderCommon}
-
+    filename = tool_regex_window_name(filename)
     ext, name = tool_parse_url(url)
 
     if filename is None:
         filename = name
 
-    # create dir
-    os.makedirs(location, exist_ok=True)
-    try:
+    alter = name
+
+    def do_download():
+        nonlocal url, location, filename, alter, headers, ext
+
+        # Trim os path
+        avail_length = 255 - len(location) - len(ext) - 2
+        filename = tool_clip_text_length(filename, avail_length)
+
         with requests.get(url, stream=True, headers=headers) as r:
             r.raise_for_status()
             with open(f"{location}/{filename}.{ext}", 'wb') as f:
                 for chunk in r.iter_content(chunk_size=8192):
                     f.write(chunk)
         return True
+
+    # create dir
+    os.makedirs(location, exist_ok=True)
+    try:
+        return do_download()
+    except OSError:
+        filename = alter
+        try:
+            do_download()
+        except:
+            return False
     except:
         return False
 
@@ -179,7 +202,7 @@ def proc_redundant_download(url: str, location: str, filename: str = None):
         if tool_download_file(
             url=url,
             location=location,
-            filename=tool_remove_emoji(filename, "_")
+            filename=tool_remove_emoji(filename, "_", allow_emoji=True)
         ):
             break
     else:
@@ -503,6 +526,20 @@ def query_options():
             return opt_ovp, opt_post, opt_amount
 
 
+def query_realname(opt_ovp):
+    if opt_ovp:
+        return button_dialog(
+            title="옵션",
+            text="공식 비디오 파일명을 선택해 주세요",
+            buttons=[
+                ('날짜만', False),
+                ('영상제목', True),
+            ],
+        ).run()
+    else:
+        return False
+
+
 def proc_load_post_list(target_channel, target_board, target_amount, membership):
     post_list = deque()
 
@@ -620,7 +657,7 @@ def query_post_select(post_list: deque, opt_ovp, opt_post):
     return deque(check_result)
 
 
-def proc_downloader(download_queue, channel_id, board_id):
+def proc_downloader(download_queue, channel_id, board_id, opt_realname):
     def callback_fn(report_progress, report_log):
         def report_fail(post_id):
             report_log("실패")
@@ -683,11 +720,15 @@ def proc_downloader(download_queue, channel_id, board_id):
                     report_fail(current_target.post_id)
                     continue
                 else:
+                    if opt_realname:
+                        ovp_filename = f"{current_date} {current_target.title}"
+                    else:
+                        ovp_filename = f"{current_date} {current_target.post_id}-video"
                     # download
                     if not proc_redundant_download(
                         url=max_source,
                         location=current_location,
-                        filename=f"{current_date} {current_target.post_id}-video"
+                        filename=f"{ovp_filename}"
                     ):
                         report_fail(current_target.post_id)
                         continue
@@ -812,6 +853,8 @@ def main():
         if not opt_ovp and not opt_post:
             return dialog_download_end()
 
+    opt_realname = query_realname(opt_ovp)
+
     post_list = proc_load_post_list(
         target_channel=target_channel,
         target_board=target_board,
@@ -829,7 +872,7 @@ def main():
         post_list = query_post_select(post_list, opt_ovp, opt_post)
 
     # Downloader Query
-    proc_downloader(post_list, target_channel, target_board)
+    proc_downloader(post_list, target_channel, target_board, opt_realname)
 
     return dialog_download_end()
 
