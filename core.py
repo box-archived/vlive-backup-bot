@@ -159,6 +159,11 @@ def tool_parse_url(url: str):
     return ext_split[-1], filename
 
 
+def tool_max_len_filename(location, filename, ext):
+    avail_length = 255 - len(location) - len(ext) - 2
+    return tool_clip_text_length(filename, avail_length)
+
+
 def tool_download_file(url: str, location: str, filename: str = None,):
     headers = {**vlivepy.variables.HeaderCommon}
     filename = tool_regex_window_name(filename)
@@ -172,9 +177,7 @@ def tool_download_file(url: str, location: str, filename: str = None,):
     def do_download():
         nonlocal url, location, filename, alter, headers, ext
 
-        # Trim os path
-        avail_length = 255 - len(location) - len(ext) - 2
-        filename = tool_clip_text_length(filename, avail_length)
+        filename = tool_max_len_filename(location, filename, ext)
 
         with requests.get(url, stream=True, headers=headers) as r:
             r.raise_for_status()
@@ -526,18 +529,15 @@ def query_options():
             return opt_ovp, opt_post, opt_amount
 
 
-def query_realname(opt_ovp):
-    if opt_ovp:
-        return button_dialog(
-            title="옵션",
-            text="공식 비디오 파일명을 선택해 주세요",
-            buttons=[
-                ('날짜만', False),
-                ('영상제목', True),
-            ],
-        ).run()
-    else:
-        return False
+def query_realname():
+    return button_dialog(
+        title="옵션",
+        text="파일을 저장할 때 사용할 파일명의 형식을 선택해 주세요.",
+        buttons=[
+            ('글번호', False),
+            ('실제제목', True),
+        ],
+    ).run()
 
 
 def proc_load_post_list(target_channel, target_board, target_amount, membership):
@@ -801,8 +801,23 @@ def proc_downloader(download_queue, channel_id, board_id, opt_realname):
                     comment_html += '</div>'
 
                 os.makedirs(current_location, exist_ok=True)
-                with open(f"{current_location}/{current_date} {current_target.post_id}-post.html",
-                          encoding="utf8", mode="w") as f:
+                post_filename = f"{current_location}/{current_date} {current_target.post_id}-post.html"
+                if opt_realname:
+                    filename_safe_title = tool_regex_window_name(tool_remove_emoji(current_target.title, "_", True))
+                    max_len_name = tool_max_len_filename(
+                        current_location,
+                        f"{current_date} {filename_safe_title}",
+                        "html"
+                    )
+                    post_real_name = f"{current_location}/{max_len_name}.html"
+                    try:
+                        open(post_real_name, "w").close()
+                    except OSError:
+                        pass
+                    else:
+                        post_filename = post_real_name
+
+                with open(post_filename, encoding="utf8", mode="w") as f:
                     f.write(str(soup))
                     f.write(comment_html)
 
@@ -853,8 +868,6 @@ def main():
         if not opt_ovp and not opt_post:
             return dialog_download_end()
 
-    opt_realname = query_realname(opt_ovp)
-
     post_list = proc_load_post_list(
         target_channel=target_channel,
         target_board=target_board,
@@ -870,6 +883,8 @@ def main():
     # Post select dialog on adv-mode
     if not easy_mode:
         post_list = query_post_select(post_list, opt_ovp, opt_post)
+
+    opt_realname = query_realname()
 
     # Downloader Query
     proc_downloader(post_list, target_channel, target_board, opt_realname)
