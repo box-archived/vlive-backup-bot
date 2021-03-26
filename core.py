@@ -345,11 +345,9 @@ def query_license_agreement():
     lic += "이 소프트웨어의 이용으로 인한 책임은 사용자에게 있으며,\n"
     lic += "저장한 영상을 타인에게 공유할 시 저작권법 위반에 해당될 수 있습니다."
 
-    formatted_lic = "\n".join(map(lambda x: x.center(60), lic.split("\n")))
-
     if not button_dialog(
             title='라이선스',
-            text=formatted_lic,
+            text=lic,
             buttons=[
                 ('동의', True),
                 ('거부', False),
@@ -407,7 +405,7 @@ def query_membership():
         if os.path.isfile("cache/vlive-backup-bot.session"):
             with open("cache/vlive-backup-bot.session", "rb") as f:
                 loaded_email = vlivepy.loadSession(f).email
-            if dialog_yn("로그인", "로그인 내역이 존재합니다.\n 기존 세션을 이용하시겠습니까?\n\n 계정정보: %s" % loaded_email):
+            if dialog_yn("로그인", "로그인 내역이 존재합니다.\n기존 세션을 이용하시겠습니까?\n\n계정정보: %s" % loaded_email):
                 return True
 
         # Login
