@@ -269,8 +269,8 @@ def query_membership():
 
     if membership_yn:
         # Session exist check
-        if os.path.isfile("vlive-backup-bot.session"):
-            with open("vlive-backup-bot.session", "rb") as f:
+        if os.path.isfile("cache/vlive-backup-bot.session"):
+            with open("cache/vlive-backup-bot.session", "rb") as f:
                 loaded_email = vlivepy.loadSession(f).email
             if dialog_yn("로그인", "로그인 내역이 존재합니다.\n 기존 세션을 이용하시겠습니까?\n\n 계정정보: %s" % loaded_email):
                 return True
@@ -328,7 +328,7 @@ def query_membership():
                     report_progress(75)
                     # dump session
                     report_log("세션파일을 생성합니다.\n")
-                    with open("vlive-backup-bot.session", "wb") as f_sess:
+                    with open("cache/vlive-backup-bot.session", "wb") as f_sess:
                         vlivepy.dumpSession(sess, f_sess)
 
                     # break
@@ -383,7 +383,7 @@ def proc_load_post_list(target_channel, target_board, target_amount, membership)
 
         # Add session when membership
         if membership:
-            with open("vlive-backup-bot.session", "rb") as f:
+            with open("cache/vlive-backup-bot.session", "rb") as f:
                 kwargs.update({"session": vlivepy.loadSession(f)})
 
         it = vlivepy.board.getBoardPostsIter(target_channel, target_board, **kwargs)
