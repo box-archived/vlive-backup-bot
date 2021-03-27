@@ -31,7 +31,7 @@ C:\> path\to\vlive-backup-bot\run.bat
 리눅스, macOS 등의 운영체제에서는 Shell 스크립트를 이용해 실행 가능합니다.
 터미널에서 __run.sh__ 파일을 실행합니다.
 ```console
-$ path/to/vlive-backup-bot/run.sh
+$ sh path/to/vlive-backup-bot/run.sh
 ```
 
 ## 사용법
