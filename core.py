@@ -64,12 +64,12 @@ def dialog_splash():
 ██╔══██╗██╔═══██╗╚══██╔══╝                       
 ██████╔╝██║   ██║   ██║                          
 ██╔══██╗██║   ██║   ██║                          
-██████╔╝╚██████╔╝   ██║         VER {__version__}                 
-╚═════╝  ╚═════╝    ╚═╝         by @box_archived                
+██████╔╝╚██████╔╝   ██║     VER {__version__}                 
+╚═════╝  ╚═════╝    ╚═╝     by @box_archived                
 """
         report_log(content)
 
-        time.sleep(0.5)
+        time.sleep(1)
 
         report_progress(50)
         report_log("\n 업데이트 확인중...")
@@ -828,7 +828,7 @@ def proc_downloader(download_queue, channel_id, board_id, opt_realname):
             )
             with open(f"cache/{channel_board_pair}.txt", encoding="utf8", mode="a") as f:
                 f.write(f"{current_target.post_id}\n")
-            time.sleep(0.3)
+            time.sleep(0.2)
 
         # Download End
         report_progress(100)
