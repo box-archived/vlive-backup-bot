@@ -119,6 +119,7 @@ class LocaleTemplate:
                        "Downloaded history is automatically saved, \n" \
                        "even if you exit the program during download."
     permission_error = "You don't have permission to load this board"
+    no_post_error = "There are no posts to select."
 
 
 class LocaleKo(LocaleTemplate):
@@ -203,6 +204,7 @@ class LocaleKo(LocaleTemplate):
     dn_progress_text = "VLIVE 게시판 백업이 진행중입니다.\n" \
                        "중간에 종료하여도 진행상황은 저장됩니다."
     permission_error = "이 게시판을 로드할 권한이 없습니다."
+    no_post_error = "선택할 포스트가 없습니다."
 
 
 class LocaleEn(LocaleTemplate):
@@ -245,14 +247,14 @@ def dialog_splash():
 ╚██╗ ██╔╝██║     ██║╚██╗ ██╔╝██╔══╝              
  ╚████╔╝ ███████╗██║ ╚████╔╝ ███████╗            
   ╚═══╝  ╚══════╝╚═╝  ╚═══╝  ╚══════╝            
-                                                 
+
 ██████╗  █████╗  ██████╗██╗  ██╗██╗   ██╗██████╗ 
 ██╔══██╗██╔══██╗██╔════╝██║ ██╔╝██║   ██║██╔══██╗
 ██████╔╝███████║██║     █████╔╝ ██║   ██║██████╔╝
 ██╔══██╗██╔══██║██║     ██╔═██╗ ██║   ██║██╔═══╝ 
 ██████╔╝██║  ██║╚██████╗██║  ██╗╚██████╔╝██║     
 ╚═════╝ ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝ ╚═════╝ ╚═╝     
-                                                 
+
 ██████╗  ██████╗ ████████╗                       
 ██╔══██╗██╔═══██╗╚══██╔══╝                       
 ██████╔╝██║   ██║   ██║                          
@@ -816,17 +818,16 @@ def query_post_select(post_list: deque, opt_ovp, opt_post):
 
             cnt += 1
             report_progress(tool_calc_percent(initial_len, cnt))
-            if len(filtered_list) == 0:
-                report_progress(100)
 
-        report_log(lang.post_list_prepare)
-        check_dialog = checkboxlist_dialog(
-            title=lang.post_list_title,
-            text=lang.post_list_text,
-            values=filtered_list,
-            ok_text=lang.oc_ok,
-            cancel_text=lang.post_list_select_all
-        )
+        if len(filtered_list) != 0:
+            report_log(lang.post_list_prepare)
+            check_dialog = checkboxlist_dialog(
+                title=lang.post_list_title,
+                text=lang.post_list_text,
+                values=filtered_list,
+                ok_text=lang.oc_ok,
+                cancel_text=lang.post_list_select_all
+            )
         report_progress(100)
 
     progress_dialog(lang.post_list_title, None, parser_progress).run()
@@ -1068,10 +1069,14 @@ def main():
     if not easy_mode:
         post_list = query_post_select(post_list, opt_ovp, opt_post)
 
-    opt_realname = query_realname()
+    if len(post_list) == 0:
+        message_dialog(lang.post_list_title, lang.no_post_error).run()
 
-    # Downloader Query
-    proc_downloader(post_list, target_channel, target_board, opt_realname)
+    else:
+        opt_realname = query_realname()
+
+        # Downloader Query
+        proc_downloader(post_list, target_channel, target_board, opt_realname)
 
     return dialog_download_end()
 
