@@ -60,9 +60,9 @@ class LocaleTemplate:
     update_failed = "Update failed"
     update_failed_text = "Failed to update the program\nPlease download new version of the program from github."
     license_title = "License"
-    license_text = 'This program is free software, licensed under GPL-3.0 License.\n'\
-                   "Full text of the license can be found in github repo.\n\n"\
-                   "The user is responsible for any problems with using the program.\n"\
+    license_text = 'This program is free software, licensed under GPL-3.0 License.\n' \
+                   "Full text of the license can be found in github repo.\n\n" \
+                   "The user is responsible for any problems with using the program.\n" \
                    "Sharing saved items with others may be a copyright infringement"
     license_accept = "Accept"
     license_decline = "Decline"
@@ -161,7 +161,7 @@ class LocaleKo(LocaleTemplate):
     dn_url_title = "다운받을 게시판의 주소를 입력하세요.\n(예: https://www.vlive.tv/channel/B039DF/board/6118 )"
     dn_url_paste = "붙여넣기"
     dn_url_verify_title = "URL 확인"
-    dn_url_verify_text = '입력하신 정보가 맞습니까?\n\n채널: %s\n게시판: %s'   # Must have 2 '%s'
+    dn_url_verify_text = '입력하신 정보가 맞습니까?\n\n채널: %s\n게시판: %s'  # Must have 2 '%s'
     dn_url_verify_error = "유효하지 않은 URL 입니다!"
     membership_yn_title = "멤버십 선택"
     membership_yn_text = "멤버십(팬십) 컨텐츠입니까?"
@@ -225,6 +225,7 @@ def select_lang():
         exit()
     else:
         lang = dialog_result
+
 
 def dialog_splash():
     has_update = False
@@ -319,7 +320,7 @@ def tool_remove_emoji(plain_text, sub, allow_emoji=False):
 
 def tool_clip_text_length(plain_text, length):
     if len(plain_text) > length:
-        plain_text = plain_text[:length-3] + ".._"
+        plain_text = plain_text[:length - 3] + ".._"
 
     return plain_text
 
@@ -356,7 +357,7 @@ def tool_max_len_filename(location, filename, ext):
     return tool_clip_text_length(filename, avail_length)
 
 
-def tool_download_file(url: str, location: str, filename: str = None,):
+def tool_download_file(url: str, location: str, filename: str = None, ):
     headers = {**vlivepy.variables.HeaderCommon}
     filename = tool_regex_window_name(filename)
     ext, name = tool_parse_url(url)
@@ -395,9 +396,9 @@ def tool_download_file(url: str, location: str, filename: str = None,):
 def proc_redundant_download(url: str, location: str, filename: str = None):
     for item in range(5):
         if tool_download_file(
-            url=url,
-            location=location,
-            filename=tool_remove_emoji(filename, "_", allow_emoji=True)
+                url=url,
+                location=location,
+                filename=tool_remove_emoji(filename, "_", allow_emoji=True)
         ):
             break
     else:
@@ -414,7 +415,6 @@ def tool_write_meta(
         author_nickname: str,
         created_at: float,
 ):
-
     # create dir
     os.makedirs(location, exist_ok=True)
 
@@ -557,7 +557,6 @@ def query_update(result: tuple):
 
 
 def query_license_agreement():
-
     if not button_dialog(
             title=lang.license_title,
             text=lang.license_text,
@@ -847,6 +846,7 @@ def proc_downloader(download_queue, channel_id, board_id, opt_realname):
             report_log(lang.dn_failed)
             with open("failed.txt", encoding="utf8", mode="a") as f_report:
                 f_report.write(f"https://www.vlive.tv/post/{post_id}\n")
+
         # set base dir
         channel_board_pair = f"{channel_id}_{board_id}"
         base_dir = f"downloaded/{channel_board_pair}"
@@ -910,9 +910,9 @@ def proc_downloader(download_queue, channel_id, board_id, opt_realname):
                         ovp_filename = f"{current_date} {current_target.post_id}-video"
                     # download
                     if not proc_redundant_download(
-                        url=max_source,
-                        location=current_location,
-                        filename=f"{ovp_filename}"
+                            url=max_source,
+                            location=current_location,
+                            filename=f"{ovp_filename}"
                     ):
                         report_fail(current_target.post_id)
                         continue
@@ -935,9 +935,9 @@ def proc_downloader(download_queue, channel_id, board_id, opt_realname):
                     item: element
                     dnld_image_name = "%s %s-img-%02d" % (current_date, current_target.post_id, img_cnt)
                     if not proc_redundant_download(
-                        url=item['src'],
-                        location=current_location,
-                        filename=dnld_image_name
+                            url=item['src'],
+                            location=current_location,
+                            filename=dnld_image_name
                     ):
                         report_fail(current_target.post_id)
                         continue
@@ -953,9 +953,9 @@ def proc_downloader(download_queue, channel_id, board_id, opt_realname):
                     # Poster get
                     dnld_poster_name = "%s %s-poster-%02d" % (current_date, current_target.post_id, video_cnt)
                     if not proc_redundant_download(
-                        url=item['poster'],
-                        location=current_location,
-                        filename=dnld_poster_name
+                            url=item['poster'],
+                            location=current_location,
+                            filename=dnld_poster_name
                     ):
                         report_fail(current_target.post_id)
                         continue
@@ -964,9 +964,9 @@ def proc_downloader(download_queue, channel_id, board_id, opt_realname):
                     # Video get
                     dnld_video_name = "%s %s-video-%02d" % (current_date, current_target.post_id, video_cnt)
                     if not proc_redundant_download(
-                        url=item['src'],
-                        location=current_location,
-                        filename=dnld_video_name
+                            url=item['src'],
+                            location=current_location,
+                            filename=dnld_video_name
                     ):
                         report_fail(current_target.post_id)
                         continue
