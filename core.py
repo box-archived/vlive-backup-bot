@@ -179,8 +179,8 @@ class LocaleKo(LocaleTemplate):
     opt_title = "옵션"
     opt_ovp_dialog = "공식 비디오를 다운로드 하시겠습니까?"
     opt_post_dialog = "포스트를 다운로드 하시겠습니까?"
-    opt_amount_dialog = "다운로드 할 개수를 입력 해 주세요.\n" \
-                        "게시물은 최신순으로 결정됩니다.\n\n" \
+    opt_amount_dialog = "게시판에서 로드할 게시물 개수를 입력 해 주세요.\n" \
+                        "게시물은 최신순으로 가져옵니다.\n\n" \
                         "(전체 다운로드 시 0 입력)"
     opt_reset_btn = "재설정"
     opt_error_invalid_value = "유효하지 않은 값입니다."
@@ -211,11 +211,11 @@ class LocaleEn(LocaleTemplate):
     pass
 
 
-lang: LocaleTemplate = LocaleTemplate()
+i18n: LocaleTemplate = LocaleTemplate()
 
 
 def select_lang():
-    global lang
+    global i18n
     dialog_result = radiolist_dialog(
         title="Language",
         values=[
@@ -226,7 +226,7 @@ def select_lang():
     if dialog_result is None:
         exit()
     else:
-        lang = dialog_result
+        i18n = dialog_result
 
 
 def dialog_splash():
@@ -267,7 +267,7 @@ def dialog_splash():
         time.sleep(1)
 
         report_progress(50)
-        report_log(f"\n {lang.checking_update}")
+        report_log(f"\n {i18n.checking_update}")
         sr = reqWrapper.get("https://api.github.com/repos/box-archived/vlive-backup-bot/releases/latest", status=[200])
         if sr.success:
             release_data = sr.response.json()
@@ -443,9 +443,9 @@ BOT-SAVED: {vlivepy.parser.format_epoch(time.time(), "%Y-%m-%d %H:%M:%S")}
 def shutdown():
     result = button_dialog(
         title='VLIVE-BACKUP-BOT',
-        text=lang.done_shutdown,
+        text=i18n.done_shutdown,
         buttons=[
-            (lang.exit_btn, True),
+            (i18n.exit_btn, True),
         ],
     ).run()
     if result:
@@ -457,7 +457,7 @@ def shutdown():
 
 def dialog_error_message(text):
     message_dialog(
-        title=lang.error,
+        title=i18n.error,
         text=text,
     ).run()
 
@@ -467,14 +467,14 @@ def dialog_yn(title, text):
         title=title,
         text=text,
         buttons=[
-            (lang.yn_yes, True),
-            (lang.yn_no, False),
+            (i18n.yn_yes, True),
+            (i18n.yn_no, False),
         ],
     ).run()
 
 
 def dialog_download_end():
-    return dialog_yn(lang.download_end_title, lang.download_end_message)
+    return dialog_yn(i18n.download_end_title, i18n.download_end_message)
 
 
 def query_update(result: tuple):
@@ -482,8 +482,8 @@ def query_update(result: tuple):
         return False
 
     update = dialog_yn(
-        title=lang.update_title,
-        text=lang.update_text
+        title=i18n.update_title,
+        text=i18n.update_text
     )
 
     update_success = False
@@ -492,7 +492,7 @@ def query_update(result: tuple):
         nonlocal result
         nonlocal update_success
         report_progress(0)
-        report_log(f"{lang.update_downloading}\n")
+        report_log(f"{i18n.update_downloading}\n")
         sr = reqWrapper.get(result[1])
         if sr.success:
             try:
@@ -507,7 +507,7 @@ def query_update(result: tuple):
                     f.write(sr.response.content)
 
                 report_progress(35)
-                report_log(f"{lang.update_validating}\n")
+                report_log(f"{i18n.update_validating}\n")
                 # extract
                 from zipfile import ZipFile
                 with ZipFile("_update/data.zip") as f:
@@ -522,7 +522,7 @@ def query_update(result: tuple):
                         target = item
 
                 report_progress(50)
-                report_log(f"{lang.update_patching}\n")
+                report_log(f"{i18n.update_patching}\n")
                 # write
                 for item in glob(f"{target}/*.*"):
                     filename = item.replace("\\", "/").rsplit("/", 1)[-1]
@@ -532,7 +532,7 @@ def query_update(result: tuple):
                             fo.write(fi.read())
 
                 report_progress(90)
-                report_log(f"{lang.update_cleanup}\n")
+                report_log(f"{i18n.update_cleanup}\n")
                 # Clean up path
                 if os.path.isdir("_update"):
                     from shutil import rmtree
@@ -545,13 +545,13 @@ def query_update(result: tuple):
         report_progress(100)
 
     if update:
-        progress_dialog(lang.update, "", callback_fn).run()
+        progress_dialog(i18n.update, "", callback_fn).run()
         if update_success:
-            message_dialog(lang.update_success, lang.update_success_text).run()
+            message_dialog(i18n.update_success, i18n.update_success_text).run()
             exit()
             return True
         else:
-            message_dialog(lang.update_failed, lang.update_failed_text).run()
+            message_dialog(i18n.update_failed, i18n.update_failed_text).run()
             open_new_tab(result[2])
             return False
 
@@ -560,11 +560,11 @@ def query_update(result: tuple):
 
 def query_license_agreement():
     if not button_dialog(
-            title=lang.license_title,
-            text=lang.license_text,
+            title=i18n.license_title,
+            text=i18n.license_text,
             buttons=[
-                (lang.license_accept, True),
-                (lang.license_decline, False),
+                (i18n.license_accept, True),
+                (i18n.license_decline, False),
             ],
     ).run():
         shutdown()
@@ -572,11 +572,11 @@ def query_license_agreement():
 
 def query_workflow_select():
     return button_dialog(
-        title=lang.select_mode_title,
-        text=lang.select_mode_text,
+        title=i18n.select_mode_title,
+        text=i18n.select_mode_text,
         buttons=[
-            (lang.select_mode_simple, True),
-            (lang.select_mode_advanced, False),
+            (i18n.select_mode_simple, True),
+            (i18n.select_mode_advanced, False),
         ],
     ).run()
 
@@ -586,10 +586,10 @@ def query_download_url():
     target_url = ""
     while True:
         target_url = input_dialog(
-            title=lang.dn_url_title,
-            text=lang.dn_url_text,
-            ok_text=lang.oc_ok,
-            cancel_text=lang.dn_url_paste,
+            title=i18n.dn_url_title,
+            text=i18n.dn_url_text,
+            ok_text=i18n.oc_ok,
+            cancel_text=i18n.dn_url_paste,
         ).run()
         if target_url is None:
             try:
@@ -600,18 +600,18 @@ def query_download_url():
         regex_result = url_rule.findall(target_url)
         if len(regex_result) == 1:
             if dialog_yn(
-                    title=lang.dn_url_verify_title,
-                    text=lang.dn_url_verify_text % (regex_result[0][0], regex_result[0][1]),
+                    title=i18n.dn_url_verify_title,
+                    text=i18n.dn_url_verify_text % (regex_result[0][0], regex_result[0][1]),
             ):
                 return regex_result[0]
         else:
-            dialog_error_message(lang.dn_url_verify_error)
+            dialog_error_message(i18n.dn_url_verify_error)
 
 
 def query_membership():
     membership_yn = dialog_yn(
-        title=lang.membership_yn_title,
-        text=lang.membership_yn_text,
+        title=i18n.membership_yn_title,
+        text=i18n.membership_yn_text,
     )
 
     if membership_yn:
@@ -619,7 +619,7 @@ def query_membership():
         if os.path.isfile("cache/vlive-backup-bot.session"):
             with open("cache/vlive-backup-bot.session", "rb") as f:
                 loaded_email = vlivepy.loadSession(f).email
-            if dialog_yn(lang.membership_login_title, lang.membership_login_load_session % loaded_email):
+            if dialog_yn(i18n.membership_login_title, i18n.membership_login_load_session % loaded_email):
                 return True
 
         # Login
@@ -628,13 +628,13 @@ def query_membership():
             user_email = ""
             while len(user_email) == 0:
                 user_email = input_dialog(
-                    title=lang.membership_login_title,
-                    text=lang.membership_login_email,
-                    ok_text=lang.oc_ok,
-                    cancel_text=lang.oc_cancel,
+                    title=i18n.membership_login_title,
+                    text=i18n.membership_login_email,
+                    ok_text=i18n.oc_ok,
+                    cancel_text=i18n.oc_cancel,
                 ).run()
                 if user_email is None:
-                    if dialog_yn(lang.membership_login_title, lang.membership_login_cancel):
+                    if dialog_yn(i18n.membership_login_title, i18n.membership_login_cancel):
                         return False
                     else:
                         user_email = ""
@@ -644,14 +644,14 @@ def query_membership():
             user_pwd = ""
             while len(user_pwd) == 0:
                 user_pwd = input_dialog(
-                    title=lang.membership_login_title,
-                    text=lang.membership_login_pw,
-                    ok_text=lang.oc_ok,
-                    cancel_text=lang.oc_cancel,
+                    title=i18n.membership_login_title,
+                    text=i18n.membership_login_pw,
+                    ok_text=i18n.oc_ok,
+                    cancel_text=i18n.oc_cancel,
                     password=True
                 ).run()
                 if user_pwd is None:
-                    if dialog_yn(lang.membership_login_title, lang.membership_login_cancel):
+                    if dialog_yn(i18n.membership_login_title, i18n.membership_login_cancel):
                         return False
                     else:
                         user_pwd = ""
@@ -662,52 +662,52 @@ def query_membership():
             # try login
             def login_try(report_progress, report_log):
                 nonlocal login_callback_result
-                report_log(f"{lang.login_connecting}\n")
+                report_log(f"{i18n.login_connecting}\n")
                 report_progress(50)
                 try:
                     sess = vlivepy.UserSession(user_email, user_pwd)
                 except vlivepy.exception.APISignInFailedError:
                     # break
-                    report_log(f"{lang.login_failed}\n")
+                    report_log(f"{i18n.login_failed}\n")
                     login_callback_result = False
                     report_progress(100)
                 else:
                     report_progress(75)
                     # dump session
-                    report_log(f"{lang.login_create_session}\n")
+                    report_log(f"{i18n.login_create_session}\n")
                     with open("cache/vlive-backup-bot.session", "wb") as f_sess:
                         vlivepy.dumpSession(sess, f_sess)
 
                     # break
-                    report_log(f"{lang.login_successful}\n")
+                    report_log(f"{i18n.login_successful}\n")
                     time.sleep(1)
                     login_callback_result = True
                     report_progress(100)
 
-            progress_dialog(lang.membership_login_title, None, login_try).run()
+            progress_dialog(i18n.membership_login_title, None, login_try).run()
             if login_callback_result:
                 return True
             else:
-                dialog_error_message(lang.login_error_dialog)
+                dialog_error_message(i18n.login_error_dialog)
 
     return membership_yn
 
 
 def query_options():
-    opt_ovp = dialog_yn(lang.opt_title, lang.opt_ovp_dialog)
-    opt_post = dialog_yn(lang.opt_title, lang.opt_post_dialog)
+    opt_ovp = dialog_yn(i18n.opt_title, i18n.opt_ovp_dialog)
+    opt_post = dialog_yn(i18n.opt_title, i18n.opt_post_dialog)
     opt_amount = None
     while opt_amount is None:
         opt_amount = input_dialog(
-            title=lang.opt_title,
-            text=lang.opt_amount_dialog,
-            ok_text=lang.oc_ok,
-            cancel_text=lang.opt_reset_btn,
+            title=i18n.opt_title,
+            text=i18n.opt_amount_dialog,
+            ok_text=i18n.oc_ok,
+            cancel_text=i18n.opt_reset_btn,
         ).run()
         try:
             opt_amount = int(opt_amount)
         except ValueError:
-            dialog_error_message(lang.opt_error_invalid_value)
+            dialog_error_message(i18n.opt_error_invalid_value)
             opt_amount = None
             continue
         except TypeError:
@@ -719,8 +719,8 @@ def query_options():
 
 def query_realname():
     return dialog_yn(
-        title=lang.opt_title,
-        text=lang.opt_name_dialog
+        title=i18n.opt_title,
+        text=i18n.opt_name_dialog
     )
 
 
@@ -746,7 +746,7 @@ def proc_load_post_list(target_channel, target_board, target_amount, membership)
         try:
             for item in it:
                 if cnt == 0:
-                    report_log(f"{lang.load_pages % page}\n")
+                    report_log(f"{i18n.load_pages % page}\n")
                     page += 1
 
                 cnt += 1
@@ -764,8 +764,8 @@ def proc_load_post_list(target_channel, target_board, target_amount, membership)
             report_progress(100)
 
     progress_dialog(
-        title=lang.load_items_title,
-        text=lang.load_items_text,
+        title=i18n.load_items_title,
+        text=i18n.load_items_text,
         run_callback=callback_fn
     ).run()
 
@@ -775,7 +775,7 @@ def proc_load_post_list(target_channel, target_board, target_amount, membership)
 def query_use_cache(channel_id, board_id, post_list: deque):
     cache_file_name = f"cache/{channel_id}_{board_id}.txt"
     if os.path.isfile(cache_file_name):
-        opt_cache = dialog_yn(lang.opt_title, lang.opt_load_history)
+        opt_cache = dialog_yn(i18n.opt_title, i18n.opt_load_history)
         if opt_cache:
             with open(cache_file_name, "r") as f:
                 cached_list = f.read().splitlines()
@@ -807,7 +807,7 @@ def query_post_select(post_list: deque, opt_ovp, opt_post):
         initial_len = len(post_list)
         cnt = 0
 
-        report_log(f"{lang.post_list_sorting}\n")
+        report_log(f"{i18n.post_list_sorting}\n")
         while post_list:
             item: vlivepy.board.BoardPostItem = post_list.popleft()
             item_ovp = item.has_official_video
@@ -820,17 +820,17 @@ def query_post_select(post_list: deque, opt_ovp, opt_post):
             report_progress(tool_calc_percent(initial_len, cnt))
 
         if len(filtered_list) != 0:
-            report_log(lang.post_list_prepare)
+            report_log(i18n.post_list_prepare)
             check_dialog = checkboxlist_dialog(
-                title=lang.post_list_title,
-                text=lang.post_list_text,
+                title=i18n.post_list_title,
+                text=i18n.post_list_text,
                 values=filtered_list,
-                ok_text=lang.oc_ok,
-                cancel_text=lang.post_list_select_all
+                ok_text=i18n.oc_ok,
+                cancel_text=i18n.post_list_select_all
             )
         report_progress(100)
 
-    progress_dialog(lang.post_list_title, None, parser_progress).run()
+    progress_dialog(i18n.post_list_title, None, parser_progress).run()
 
     if check_dialog is not None:
         check_dialog: Application
@@ -844,7 +844,7 @@ def query_post_select(post_list: deque, opt_ovp, opt_post):
 def proc_downloader(download_queue, channel_id, board_id, opt_realname):
     def callback_fn(report_progress, report_log):
         def report_fail(post_id):
-            report_log(lang.dn_failed)
+            report_log(i18n.dn_failed)
             with open("failed.txt", encoding="utf8", mode="a") as f_report:
                 f_report.write(f"https://www.vlive.tv/post/{post_id}\n")
 
@@ -863,7 +863,7 @@ def proc_downloader(download_queue, channel_id, board_id, opt_realname):
             report_progress(current_percent)
             current_target = download_queue.popleft()
             current_target: vlivepy.board.BoardPostItem
-            log_format = f"\n(%4.01f%%%%)(%s) [%s] {lang.dn_downloading}" % (
+            log_format = f"\n(%4.01f%%%%)(%s) [%s] {i18n.dn_downloading}" % (
                 current_percent, tool_format_creator(initial_length), current_target.post_id
             )
             report_log(log_format % (initial_length - len(download_queue), initial_length))
@@ -918,7 +918,7 @@ def proc_downloader(download_queue, channel_id, board_id, opt_realname):
                         report_fail(current_target.post_id)
                         continue
                     else:
-                        report_log(lang.dn_done)
+                        report_log(i18n.dn_done)
             else:
                 # type Post
                 post = current_target.to_object()
@@ -974,7 +974,7 @@ def proc_downloader(download_queue, channel_id, board_id, opt_realname):
                     item['src'] = f"{dnld_video_name}.{tool_parse_url(item['src'])[0]}"
 
                 # Get star-comment
-                comment_html = f"""\n<div style="padding-top:5px"><h3>{lang.dn_star_comment}</h3></div>"""
+                comment_html = f"""\n<div style="padding-top:5px"><h3>{i18n.dn_star_comment}</h3></div>"""
 
                 for comment_item in post.getPostStarCommentsIter():
                     comment_html += '<div style="padding-top:5px;width:720px;border-top:1px solid #f2f2f2;border-bottom:1px solid #f2f2f2">'
@@ -1006,7 +1006,7 @@ def proc_downloader(download_queue, channel_id, board_id, opt_realname):
                     f.write(str(soup))
                     f.write(comment_html)
 
-                report_log(lang.dn_done)
+                report_log(i18n.dn_done)
 
             # Write meta
             tool_write_meta(
@@ -1025,8 +1025,8 @@ def proc_downloader(download_queue, channel_id, board_id, opt_realname):
         report_progress(100)
 
     progress_dialog(
-        title=lang.dn_progress_tile,
-        text=lang.dn_progress_text,
+        title=i18n.dn_progress_tile,
+        text=i18n.dn_progress_text,
         run_callback=callback_fn
     ).run()
 
@@ -1060,7 +1060,7 @@ def main():
         membership=membership,
     )
     if post_list is None:
-        dialog_error_message(lang.permission_error)
+        dialog_error_message(i18n.permission_error)
         return dialog_download_end()
 
     post_list = query_use_cache(target_channel, target_board, post_list)
@@ -1070,7 +1070,7 @@ def main():
         post_list = query_post_select(post_list, opt_ovp, opt_post)
 
     if len(post_list) == 0:
-        message_dialog(lang.post_list_title, lang.no_post_error).run()
+        message_dialog(i18n.post_list_title, i18n.no_post_error).run()
 
     else:
         opt_realname = query_realname()
