@@ -1,3 +1,6 @@
+> #### Language
+> [English](README.md) 한국어
+
 # vlive-backup-bot
 [![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/box-archived/vlive-backup)](https://github.com/box-archived/vlive-backup/releases)
 [![Discord](https://img.shields.io/discord/824605893885820939)](https://discord.gg/84sVr2mQKX)
@@ -16,7 +19,7 @@ VLIVE의 게시판의 게시물을 모두 다운로드 할 수 있는 봇입니�
 
 
 ### Windows 7, 8, 10
-다운로드 한 소스코드의 압축을 풀고 __run.bat__ 파일을 실행합니다.
+다운로드한 소스코드의 압축을 풀고 __run.bat__ 파일을 실행합니다.
 
 SmartScreen 보호 알림이 표시되었다면, <u>추가 정보</u> 버튼을 클릭하여 실행 버튼을 표시할 수 있습니다.
 실행 버튼을 표시한 뒤 클릭하여 실행 해 주세요.
