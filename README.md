@@ -20,25 +20,25 @@ You MUST check __Add Python 3.x to PATH__ during installation, if you install py
 
 ### Windows 7, 8, 10
 
-Execute __run.bat__ file from unzipped release file.
+Execute __run-windows.bat__ file from unzipped release file.
 
 If the SmartScreen alert has shown, Click <u>More Info</u> text. Then, you can see **Run Anyway** button. Click the
 button to run!
 
-Or, you can execute the program with Command Prompt. Open the Command Prompt, drap-and-drop __run.bat__ to it and press
+Or, you can execute the program with Command Prompt. Open the Command Prompt, drap-and-drop __run-windows.bat__ to it and press
 enter!
 
 ```console
-C:\> path\to\vlive-backup-bot\run.bat
+C:\> path\to\vlive-backup-bot\run-windows.bat
 ```
 
 ### Other OS
 
-On Linux, macOS, etc., you can execute the program with Shell script. Drag-and-drop __run.sh__ to terminal and press
+On Linux, macOS, etc., you can execute the program with Shell script. Drag-and-drop __run-others.sh__ to terminal and press
 enter!
 
 ```console
-$ sh path/to/vlive-backup-bot/run.sh
+$ sh path/to/vlive-backup-bot/run-others.sh
 ```
 
 ## How To Use

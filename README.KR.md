@@ -19,22 +19,22 @@ VLIVE의 게시판의 게시물을 모두 다운로드 할 수 있는 봇입니�
 
 
 ### Windows 7, 8, 10
-다운로드한 소스코드의 압축을 풀고 __run.bat__ 파일을 실행합니다.
+다운로드한 소스코드의 압축을 풀고 __run-windows.bat__ 파일을 실행합니다.
 
 SmartScreen 보호 알림이 표시되었다면, <u>추가 정보</u> 버튼을 클릭하여 실행 버튼을 표시할 수 있습니다.
 실행 버튼을 표시한 뒤 클릭하여 실행 해 주세요.
 
 명령 프롬프트를 이용하여 실행 가능합니다.
-명령 프롬프트를 열고 __run.bat__ 파일을 드래그 하여 실행할 수 있습니다.
+명령 프롬프트를 열고 __run-windows.bat__ 파일을 드래그 하여 실행할 수 있습니다.
 ```console
-C:\> path\to\vlive-backup-bot\run.bat
+C:\> path\to\vlive-backup-bot\run-windows.bat
 ```
 
 ### Other OS
 리눅스, macOS 등의 운영체제에서는 Shell 스크립트를 이용해 실행 가능합니다.
-터미널에서 __run.sh__ 파일을 실행합니다.
+터미널에서 __run-others.sh__ 파일을 실행합니다.
 ```console
-$ sh path/to/vlive-backup-bot/run.sh
+$ sh path/to/vlive-backup-bot/run-others.sh
 ```
 
 ## 사용법
