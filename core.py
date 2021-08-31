@@ -359,7 +359,7 @@ def tool_max_len_filename(location, filename, ext):
     return tool_clip_text_length(filename, avail_length)
 
 
-def tool_download_file(url: str, location: str, filename: str = None, ):
+def tool_download_file(url: str, location: str, filename: str = None, is_sub: bool = False):
     headers = {**vlivepy.variables.HeaderCommon}
     filename = tool_regex_window_name(filename)
     ext, name = tool_parse_url(url)
@@ -370,7 +370,7 @@ def tool_download_file(url: str, location: str, filename: str = None, ):
     alter = name
 
     def do_download():
-        nonlocal url, location, filename, alter, headers, ext
+        nonlocal url, location, filename, alter, headers, ext, is_sub
 
         filename = tool_max_len_filename(location, filename, ext)
 
@@ -379,6 +379,11 @@ def tool_download_file(url: str, location: str, filename: str = None, ):
             with open(f"{location}/{filename}.{ext}", 'wb') as f:
                 for chunk in r.iter_content(chunk_size=8192):
                     f.write(chunk)
+
+        if is_sub:
+            os.makedirs(f"{location.replace('/vtt-', '/srt-')}", exist_ok=True)
+            tool_vtt_to_srt_converter(f"{location}/{filename}.{ext}")
+
         return True
 
     # create dir
@@ -395,12 +400,13 @@ def tool_download_file(url: str, location: str, filename: str = None, ):
         return False
 
 
-def proc_redundant_download(url: str, location: str, filename: str = None):
+def proc_redundant_download(url: str, location: str, filename: str = None, is_sub: bool = False):
     for item in range(5):
         if tool_download_file(
                 url=url,
                 location=location,
-                filename=tool_remove_emoji(filename, "_", allow_emoji=True)
+                filename=tool_remove_emoji(filename, "_", allow_emoji=True),
+                is_sub=is_sub
         ):
             break
     else:
@@ -438,6 +444,42 @@ BOT-SAVED: {vlivepy.parser.format_epoch(time.time(), "%Y-%m-%d %H:%M:%S")}
     # write
     with open(f"{location}/{current_date} {post_id}-info.txt", encoding="utf8", mode="w") as f:
         f.write(meta_text)
+
+
+def tool_captions_parser(title: str, play_info: dict) -> list:
+    result = []
+    captions = play_info.get("captions", dict()).get("list", list())
+    for c_item in captions:
+        c_item: dict
+        filename = title
+
+        subtype = c_item.get("type", 'UNKNOWN')
+
+        if subtype == "fan":
+            filename += ".fanSub."
+        elif subtype == "cp":
+            filename += ".official."
+        elif subtype == "auto":
+            filename += ".autoSub."
+        else:
+            filename += f".{subtype}."
+
+        filename += c_item.get('locale', 'UNKNOWN')
+
+        result.append((c_item.get('source'), filename))
+
+    return result
+
+
+def tool_vtt_to_srt_converter(file):
+    with open(file, "r", encoding="utf8") as f:
+        vtt_text = f.read()
+
+    srt_text = "1" + vtt_text.split("1", 1)[-1]
+    srt_text = re.sub("(?<=\\d{2}:\\d{2}:\\d{2}).(?=\\d{3})", ",", srt_text)
+
+    with open(f"{file.replace('/vtt-', '/srt-').rsplit('vtt', 1)[0]}srt", "w", encoding="utf8") as f:
+        f.write(srt_text)
 
 
 def shutdown():
@@ -898,9 +940,10 @@ def proc_downloader(download_queue, channel_id, board_id, opt_realname):
                     report_fail(current_target.post_id)
                     continue
 
-                # Find max res source
+                # Find max res source, captions
                 try:
-                    max_source = vlivepy.parser.max_res_from_play_info(ovv.getVodPlayInfo())['source']
+                    ovv_play_info = ovv.getVodPlayInfo()
+                    max_source = vlivepy.parser.max_res_from_play_info(ovv_play_info)['source']
                 except KeyError:
                     report_fail(current_target.post_id)
                     continue
@@ -910,6 +953,7 @@ def proc_downloader(download_queue, channel_id, board_id, opt_realname):
                     else:
                         ovp_filename = f"{current_date} {current_target.post_id}-video"
                     # download
+                    captions = tool_captions_parser(ovp_filename, ovv_play_info)
                     if not proc_redundant_download(
                             url=max_source,
                             location=current_location,
@@ -918,6 +962,13 @@ def proc_downloader(download_queue, channel_id, board_id, opt_realname):
                         report_fail(current_target.post_id)
                         continue
                     else:
+                        for item in captions:
+                            proc_redundant_download(
+                                url=item[0],
+                                location=f"{current_location}/vtt-subs",
+                                filename=f"{item[1]}",
+                                is_sub=True,
+                            )
                         report_log(i18n.dn_done)
             else:
                 # type Post
