@@ -158,8 +158,8 @@ class LocaleKo(LocaleTemplate):
                        "고급모드: 다운로드 옵션을 지정합니다."
     select_mode_simple = "간편모드"
     select_mode_advanced = "고급모드"
-    dn_url_text = "다운로드 URL 입력"
-    dn_url_title = "다운받을 게시판의 주소를 입력하세요.\n(예: https://www.vlive.tv/channel/B039DF/board/6118 )"
+    dn_url_title = "다운로드 URL 입력"
+    dn_url_text = "다운받을 게시판의 주소를 입력하세요.\n(예: https://www.vlive.tv/channel/B039DF/board/6118 )"
     dn_url_paste = "붙여넣기"
     dn_url_verify_title = "URL 확인"
     dn_url_verify_text = '입력하신 정보가 맞습니까?\n\n채널: %s\n게시판: %s'  # Must have 2 '%s'
