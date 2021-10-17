@@ -27,7 +27,7 @@ from prompt_toolkit.shortcuts import (
     checkboxlist_dialog,
     clear,
 )
-import pyclip
+import pyperclip
 
 __version__ = "0.3.0"
 
@@ -635,7 +635,7 @@ def query_download_url():
         ).run()
         if target_url is None:
             try:
-                target_url = pyclip.paste().decode()
+                target_url = pyperclip.paste()
             except:
                 target_url = ""
 
