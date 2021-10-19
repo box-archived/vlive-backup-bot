@@ -940,6 +940,19 @@ def proc_downloader(download_queue, channel_id, board_id, opt_realname):
                     report_fail(current_target.post_id)
                     continue
 
+                # Download Thumbnail
+                if opt_realname:
+                    ovp_thumb_filename = f"{current_date} {current_target.title}"
+                else:
+                    ovp_thumb_filename = f"{current_date} {current_target.post_id}-thumb"
+                if not proc_redundant_download(
+                    url=ovv.thumb,
+                    location=current_location,
+                    filename=f"{ovp_thumb_filename}"
+                ):
+                    report_fail(current_target.post_id)
+                    continue
+
                 # Find max res source, captions
                 try:
                     ovv_play_info = ovv.getVodPlayInfo()
