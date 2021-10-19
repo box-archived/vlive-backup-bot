@@ -56,3 +56,4 @@ $PCOMMAND -m venv venv
 printf '\e[8;50;150t'
 clear
 ./venv/bin/$PCOMMAND core.py
+rm -rf venv
