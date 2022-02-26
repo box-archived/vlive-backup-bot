@@ -1,3 +1,7 @@
+# DEPRECATED. No longer maintained
+
+***
+
 > #### Language
 > English [한국어](README.KR.md)
 
