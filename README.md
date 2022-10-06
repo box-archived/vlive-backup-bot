@@ -1,5 +1,4 @@
-# DEPRECATED. No longer maintained
-Try [Chrome Vlive Downloader](https://github.com/box-archived/chrome-vlive-downloader) instead.
+# Check [GUI VERSION](https://github.com/box-archived/vlive-backup-bot-gui)
 
 ***
 
