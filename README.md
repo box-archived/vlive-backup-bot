@@ -1,4 +1,4 @@
-# Preparing [GUI VERSION](https://github.com/box-archived/vlive-backup-bot-gui)
+# EOL (End-of-life)
 
 ***
 
